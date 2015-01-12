@@ -124,4 +124,12 @@ open_link("neuro")
 open_link("rash")
 open_link("resp")
 
+#this are 9 files i need to download everday
+#all cases of everything alless
+#all caases of anybody who went to ac hospital alless2
+#roi records of interest
+#roi2 records of interest at ac hospital
+#download links to surv in private, change names to the names above
+#change name to functions
+
 
