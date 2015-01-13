@@ -12,21 +12,21 @@ yesterday <- today - 1
 
 if ( Sys.info()["sysname"] == "Linux" ){
   
-  originalwd <- paste0("/media/joebrew/JB/fdoh/private/surv/", today)
-  survwd <- "/media/joebrew/JB/fdoh/private/surv"
-  historicalwd <- "/media/joebrew/JB/fdoh/private/surv/historical"
-  giswd <- "/media/joebrew/JB/fdoh/private/surv/gis"
+  private_surv <- paste0("/media/joebrew/JB/fdoh/private/surv/", today)
+  private <- "/media/joebrew/JB/fdoh/private/surv"
+  private_historical <- "/media/joebrew/JB/fdoh/private/surv/historical"
+  public_gis <- "/media/joebrew/JB/fdoh/private/surv/gis"
   
 } else {
   
-  originalwd <- paste0("E:/fdoh/private/surv/", today)
-  survwd <- "E:/fdoh/private/surv"
-  historicalwd <- "E:/fdoh/private/surv/historical"
-  giswd <- "E:/fdoh/private/surv/gis"
+  private_surv <- paste0("E:/fdoh/private/surv/", today)
+  private <- "E:/fdoh/private/surv"
+  private_historical <- "E:/fdoh/private/surv/historical"
+  public_gis <- "E:/fdoh/private/surv/gis"
   
 }
 
-setwd(originalwd) 
+setwd(private_surv) 
 
 
 ###################
@@ -70,7 +70,7 @@ symnames <- c("GI", "ILI","Neuro", "Rash", "Resp")
 ###################
 #READ IN DATA FROM ESSENCE
 ###################
-setwd(originalwd) 
+setwd(private_surv) 
 
 alless <- read.table("alless.txt", sep= ",", header=TRUE)
 alless2 <- read.table("alless2.txt", sep= ",", header=TRUE)
@@ -107,7 +107,7 @@ rm(roi2)
 ###################
 #READ IN BASELINE FILES
 ###################
-setwd(historicalwd)
+setwd(private_historical)
 
 #alless1213 <- fread("alless1213updated.csv")
 #symOld <- fread("symOldUpdated.csv")
@@ -134,9 +134,9 @@ symOld <- read.csv("symOldUpdated.csv")
 ###################
 #READ IN GIS COORDINATES FOR ZIP CODES
 ###################
-setwd(giswd)
+setwd(public_gis)
 joelatlong <- read.csv("joelatlong.csv", header=TRUE, sep=",") #This is the GIS data for zip code
-setwd(originalwd)
+setwd(private_surv)
 
 ###################
 #COMBINE THE 5 TRACKED SYMPTOM FILES
@@ -259,7 +259,7 @@ alless1213 <- rbind(alless1213[which(alless1213$Date < min(alless$Date)),],alles
 ###################
 #WRITE HISTORICAL CSVs
 ###################
-setwd(historicalwd)
+setwd(private_historical)
 write.csv(symOld, "symOldUpdated.csv")
 write.csv(alless1213, "alless1213updated.csv")
 #write.csv(alless1213, "alless1213updated_backup_2014-10-01.csv")
@@ -274,7 +274,7 @@ alless1213$bl <- grepl(bl.range, alless1213$Date)
 ###################
 #MAP SET UP
 ###################
-setwd(paste0(survwd, "/gis/alachuazipcodes"))
+setwd(paste0(private, "/gis/alachuazipcodes"))
 zip.map <- readShapePoly("ACDPS_zipcode.shp")
 zip.map$Zipcode <- zip.map$ZIP
 labelpos <- data.frame(do.call(rbind, lapply(zip.map@polygons, function(x) x@labpt)))
@@ -1243,7 +1243,7 @@ SurfaceFun("neuro")
 #******SAVE
 #******IMAGE
 ######################
-save.image(paste(survwd, "/",
+save.image(paste(private, "/",
                  today,
                  "/",
                  "zap.Rdata", sep=""))
