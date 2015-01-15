@@ -6,15 +6,15 @@ library(xtable)
 library(gdata)
 library(plyr)
 library(maps)
-library(mapdata)
+#library(mapdata)
 library(maptools)
-library(rJava)
+#library(rJava)
 library(OpenStreetMap)
-library(rgdal)
+#library(rgdal)
 library(shapefiles)
 library(SemiPar)
 library(wordcloud)
-library(RCurl)
+#library(RCurl)
 library(classInt)
 library(data.table)
 library(dplyr)
@@ -93,7 +93,7 @@ roi <- rbind(roi, roi2) ; roi <- roi[!duplicated(roi$MedRecNo),] ; rm(roi2)
 ###################
 #READ IN OLD FILES
 ###################
-setwd(private_historical)
+setwd("/home/benbrew/Documents/private/surv/Historical")
 
 alless_old <- read.csv("alless_old_updated.csv")
 sym_old <- read.csv("sym_old_updated.csv")
@@ -177,7 +177,7 @@ alachua <- alachua[!duplicated(alachua),]
 ###################
 #WRITE HISTORICAL CSVs
 ###################
-setwd(private_historical)
+setwd("/home/benbrew/Documents/private/surv/Historical")
 write.csv(sym_old, "sym_old_updated.csv")
 write.csv(alless_old, "alless_old_updated.csv")
 
