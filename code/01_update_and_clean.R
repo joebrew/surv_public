@@ -93,7 +93,7 @@ roi <- rbind(roi, roi2) ; roi <- roi[!duplicated(roi$MedRecNo),] ; rm(roi2)
 ###################
 #READ IN OLD FILES
 ###################
-setwd("/home/benbrew/Documents/private/surv/Historical")
+setwd(private_historical)
 
 alless_old <- read.csv("alless_old_updated.csv")
 sym_old <- read.csv("sym_old_updated.csv")
@@ -177,7 +177,7 @@ alachua <- alachua[!duplicated(alachua),]
 ###################
 #WRITE HISTORICAL CSVs
 ###################
-setwd("/home/benbrew/Documents/private/surv/Historical")
+setwd(private_historical)
 write.csv(sym_old, "sym_old_updated.csv")
 write.csv(alless_old, "alless_old_updated.csv")
 

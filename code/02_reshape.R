@@ -7,14 +7,14 @@ library(gdata)
 library(plyr)
 library(maps)
 library(mapdata)
-library(maptools)
-library(rJava)
-library(OpenStreetMap)
-library(rgdal)
+#library(maptools)
+#library(rJava)
+#library(OpenStreetMap)
+#library(rgdal)
 library(shapefiles)
 library(SemiPar)
 library(wordcloud)
-library(RCurl)
+#library(RCurl)
 library(classInt)
 library(data.table)
 library(dplyr)
@@ -26,11 +26,6 @@ start.time <- Sys.time()
 today <- Sys.Date()  
 yesterday <- today - 1
 
-###################
-#SET GRAPHICAL PARAMETERS
-###################
-def.par <- par(no.readonly = TRUE)
-par(def.par)
 
 ###################
 #SET COLORS FOR SYNDROMES
@@ -117,7 +112,8 @@ plot(x = x$Date,
      y = x$visits)
 
 #####
-# TASK 8: GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS FOR JUST ILI
+# TASK 8: GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS FOR JUST ILI #cat means category;
+#indicates what type of sickness- ILI is flu like sickness, but majority dont have sickness.
 #####
 # hint: like above, but use the filter() function
 # hint: you know which ones had ili but looking in the cat column
