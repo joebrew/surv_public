@@ -119,6 +119,14 @@ plot(x = x$Date,
 # hint: you know which ones had ili but looking in the cat column
 # hint: your output should have two columns: Date, visits
 # order: name your output dataframe ili
+table(alachua$cat)
+
+ili <- alachua %>% 
+  group_by(Date) %>% 
+  filter(cat=="ili") %>%
+  summarise(visits = n())
+
+#it took me 14 minutes just to figure this one out......
 
 #####
 # TASK 9: GET COUNTS AMONG ALACHUA RESIDENTS FOR ALL SYMPTOMS (cat = symptom)
@@ -126,6 +134,25 @@ plot(x = x$Date,
 #####
 # hint: your output should have three columns: Date, visits, cat
 # order: name your output dataframe sym
+# I guess here you want me to filter for cat equal to any named symptom- gi, ili, neuro, rash, resp.
+table(alachua$cat)
+
+sym <- alachua %>% 
+  group_by(Date) %>%
+  summarise(visit= n())
+
+sym <- alachua%>%
+  group_by(Date) %>%
+  filter(cat=="gi", cat=="ili")%>%
+  summarise(visits=n(),
+            cat=n())
+  
+
+sym <- alachua %>% 
+  group_by(Date) %>% 
+  filter(alachua, cat="ili", cat=="neuro")
+  summarise(visits=n())
+
 
 #####
 # TASK 10: SUBSET SYM INTO APPROPRIATELY NAMED DATAFRAMES FOR EACH CAT
