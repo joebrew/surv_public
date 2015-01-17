@@ -26,7 +26,6 @@ start.time <- Sys.time()
 today <- Sys.Date()  
 yesterday <- today - 1
 
-
 ###################
 #SET COLORS FOR SYNDROMES
 ###################
@@ -138,20 +137,8 @@ ili <- alachua %>%
 table(alachua$cat)
 
 sym <- alachua %>% 
-  group_by(Date) %>%
+  group_by(Date, cat) %>%
   summarise(visit= n())
-
-sym <- alachua%>%
-  group_by(Date) %>%
-  filter(cat=="gi", cat=="ili")%>%
-  summarise(visits=n(),
-            cat=n())
-  
-
-sym <- alachua %>% 
-  group_by(Date) %>% 
-  filter(alachua, cat="ili", cat=="neuro")
-  summarise(visits=n())
 
 
 #####
@@ -160,6 +147,12 @@ sym <- alachua %>%
 # hint: use the which statement, writing 5 lines of code
 # hint: you should create five dataframes named: gi, ili, neuro, rash, resp
 # hint: use the which() function to subset sym
+table(sym$cat)
+ili2 <- sym[which(sym$cat=="ili"),]
+gi <- sym[which(sym$cat=="gi"),]
+neuro <- sym[which(sym$cat=="neuro"),]  
+rash <- sym[which(sym$cat=="rash"),]
+resp <- sym[which(sym$cat=="resp"),]
 
 #####
 # TASK 11: CREATE ONE DATAFRAME WITH ED COUNTS FOR ALL DATES, ZIP CODES AND SYMPTOMS
@@ -168,11 +161,21 @@ sym <- alachua %>%
 # hint: your final dataframe will have 4 columns: Date, Zipcode, cat, visits
 # order: name your dataframe zip_df
 
+zip_df <- alachua %>% 
+  group_by(Date, Zipcode, cat) %>%
+  summarise(visits=n())
+
+
+
 #####
 # TASK 12: ADD A day COLUMN TO zip_df 
 #          THIS WILL BE DAY OF THE WEEK
 #####
 # hint: use the format() function to format zip_df$Date
+
+
+
+
 
 ######
 # TASK 13: ADD A day_num COLUMN WHICH WILL BE DAYS SINCE 2012-01-01
