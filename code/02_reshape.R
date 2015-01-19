@@ -173,28 +173,56 @@ zip_df <- alachua %>%
 #####
 # hint: use the format() function to format zip_df$Date
 
-
-
+str(sym$Date)
+#for written dat
+zip_df$written_date <- format(zip_df$Date, format = "%B %d, %Y")
+#for week number
+zip_df$week_number <- format(zip_df$Date, format = "%U")
+#for day of week
+zip_df$dow <- format(zip_df$Date, format = "%a")
 
 
 ######
 # TASK 13: ADD A day_num COLUMN WHICH WILL BE DAYS SINCE 2012-01-01
 ######
-# no hints!
+# this one creates a column that numbers the days of the year, 1-65
+zip_df$day_num <- format(zip_df$Date, format = "%j")
+table(zip_df$day_num)
+
+#I'm not sure how to do days since jan 1 2012. 
+
+nrow(zip_df)
+zip_df$day_num <-seq.int(nrow(zip_df))
+
+
+
+#this did number of day in each year (1-366), but do you want total number of day
+#since jan 1st 2012. What is that relevant in the regression?
 
 ######
 # TASK 14: WRITE A REGRESSION MODEL WHICH PREDICTS
 # visits AS A FUNCTION OF cat, day_num, day and Zipcode
 ######
+# I'm guessing we need to recode zipcode into a categorical varible
+
+
+mod1 <- lm(zip_df$visits ~ zip_df$cat + zip_df$day_num + zip_df$dow + zip_df$Zipcode)
+summary(mod1)
+
+
 
 ######
 # TASK 15: ADD A predicted COLUMN TO zip_df
 # WITH THE NUMBER OF VISITS WE WOULD HAVE PREDICTED
 ######
 
+mod1 <- lm(zip_df$visits ~ zip_df$cat + zip_df$day_num + zip_df$dow + zip_df$Zipcode)
+summary(mod1)
 
 
 
+zip_df$predict <- predict(mod1, newdata = zip_df)
+summary(zip_df$predict)
 
 
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE

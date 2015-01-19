@@ -7,9 +7,9 @@ library(gdata)
 library(plyr)
 library(maps)
 #library(mapdata)
-library(maptools)
+#library(maptools)
 #library(rJava)
-library(OpenStreetMap)
+#library(OpenStreetMap)
 #library(rgdal)
 library(shapefiles)
 library(SemiPar)
@@ -22,7 +22,7 @@ library(dplyr)
 ###################
 #SET DATE / TIME PARAMETERS
 ###################
-today <- Sys.Date()  
+today <- Sys.Date() 
 yesterday <- today - 1
 
 ###################
@@ -187,3 +187,4 @@ write.csv(alless_old, "alless_old_updated.csv")
 rm(alless_old, sym_old, keep_columns, my_files)
 setwd(private_today)
 save.image("cleaned.RData")
+
