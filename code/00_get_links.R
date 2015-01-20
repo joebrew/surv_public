@@ -65,14 +65,14 @@ get_link <- function(syndrome = NULL,
   if(is.null(start_date)){
     start_date <- paste0("startDate=", format(Sys.Date() - 7, format = "%d%b%Y"), "&")
   } else {
-    start_date <- start_date
+    start_date <- format(start_date, format = "%d%b%Y")
   }
   
   # End date
   if(is.null(end_date)){
     end_date <- paste0("endDate=", format(Sys.Date() - 1, format = "%d%b%Y"), "&")
   } else {
-    end_date <- end_date
+    end_date <- format(end_date, format = "%d%b%Y")
   }
   
   if(text){
