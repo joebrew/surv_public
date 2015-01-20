@@ -1161,7 +1161,7 @@ wnv <- alless[which(grepl(regexFun("WEST NILE|WNV|OCULAR"), alless$CCDD)>0 &
 library(gstat)
 library(geoR)
 library(rgdal)
-library(scatterplot3d)
+#library(scatterplot3d)
 library(RColorBrewer)
 
 # Read in boundary
@@ -1248,25 +1248,25 @@ save.image(paste(private, "/",
                  "/",
                  "zap.Rdata", sep=""))
 
-par(mfrow=c(1,1))
-
-tot.time <- as.numeric(Sys.time() - start.time)
-cat(paste0("\n\n\n\n\n\n\n\n",  "Congratulations!!!", 
-           "\n", "That took about ", round(tot.time, digits=0), " minutes",
-           "\n\n",
-           "Now you can run the zap.Rnw file in order to produce a surveillance report",
-           "\n\n\n") )
-
-# RESPIRATORY AMONG YOUTH
-library(dplyr)
-
-symOld$kid <- ifelse(symOld$Age >= 18, FALSE, TRUE)
-x <- symOld %>%
-  filter(cat == "gi", kid == TRUE) %>%
-  group_by(Date) %>%
-  summarise(count = n())
-
-x
-plot(x$Date, x$count, xlim = c(max(x$Date) - 20, max(x$Date)),
-     xlab = "Last 20 days", ylab = "Cases",
-     type = "l", col = "darkblue")
+# par(mfrow=c(1,1))
+# 
+# tot.time <- as.numeric(Sys.time() - start.time)
+# cat(paste0("\n\n\n\n\n\n\n\n",  "Congratulations!!!", 
+#            "\n", "That took about ", round(tot.time, digits=0), " minutes",
+#            "\n\n",
+#            "Now you can run the zap.Rnw file in order to produce a surveillance report",
+#            "\n\n\n") )
+# 
+# # RESPIRATORY AMONG YOUTH
+# library(dplyr)
+# 
+# symOld$kid <- ifelse(symOld$Age >= 18, FALSE, TRUE)
+# x <- symOld %>%
+#   filter(cat == "gi", kid == TRUE) %>%
+#   group_by(Date) %>%
+#   summarise(count = n())
+# 
+# x
+# plot(x$Date, x$count, xlim = c(max(x$Date) - 20, max(x$Date)),
+#      xlab = "Last 20 days", ylab = "Cases",
+#      type = "l", col = "darkblue")

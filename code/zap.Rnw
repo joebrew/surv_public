@@ -1,4 +1,5 @@
 \documentclass[12pt]{article}
+\pagestyle{empty}
 \usepackage{multicol}
 \usepackage{tabularx}
 \usepackage{geometry}

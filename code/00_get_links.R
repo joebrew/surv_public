@@ -1,3 +1,38 @@
+###################
+#SET DATE / TIME PARAMETERS
+###################
+today <- Sys.Date() 
+yesterday <- today - 1
+
+###################
+#DEFINE AND SET WD
+###################
+if ( Sys.info()["sysname"] == "Linux" ){
+  # Joe's linux
+  if(Sys.info()["user"] == "joebrew"){
+    private_today <- paste0("/media/joebrew/JB/fdoh/private/surv/", today)
+    private <- "/media/joebrew/JB/fdoh/private/surv"
+    private_historical <- "/media/joebrew/JB/fdoh/private/surv/historical"
+    public_gis <- "/media/joebrew/JB/fdoh/private/surv/gis"
+  }
+  # Ben's linux
+  else {
+    private_today <- paste0("/home/benbrew/Documents/private/surv/", today)
+    private <- "/home/benbrew/Documents/private/surv/"
+    private_historical <- "/home/benbrew/Documents/private/surv/historical"
+    public_gis <- "/home/benbrew/Documents/surv_public/gis"
+  }
+  # Joe's Windows computers:
+} else {
+  private_today <- paste0("E:/fdoh/private/surv/", today)
+  private <- "E:/fdoh/private/surv"
+  private_historical <- "E:/fdoh/private/surv/historical"
+  public_gis <- "E:/fdoh/private/surv/gis"
+}
+
+# SET WD
+setwd(private_today) 
+
 get_link <- function(syndrome = NULL,
                      patient_location = "alachua",
                      hospital_location = NULL,
@@ -109,20 +144,24 @@ df$link[which(df$file == "rash.txt")] <- get_link("rash")
 df$link[which(df$file == "resp.txt")] <- get_link("resp")
 
 # Function to open link
-open_link <- function(syndrome){
-  browseURL(df$link[which(df$file == paste0(syndrome, ".txt"))])
-}
+# open_link <- function(syndrome){
+#   browseURL(df$link[which(df$file == paste0(syndrome, ".txt"))])
+# }
 
 # Open each of the URLs
-open_link("alless")
-open_link("alless2")
-open_link("roi")
-open_link("roi2")
-open_link("gi")
-open_link("ili")
-open_link("neuro")
-open_link("rash")
-open_link("resp")
+# open_link("alless")
+# open_link("alless2")
+# open_link("roi")
+# open_link("roi2")
+# open_link("gi")
+# open_link("ili")
+# open_link("neuro")
+# open_link("rash")
+# open_link("resp")
+
+# WRITE A CSV WITH MOST RECENT LINKS
+setwd(private)
+write.csv(df, 'todays_links.csv')
 
 #this are 9 files i need to download everday
 #all cases of everything alless
