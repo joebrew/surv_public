@@ -29,15 +29,8 @@ yesterday <- today - 1
 ###################
 #SET COLORS FOR SYNDROMES
 ###################
-symcols <- colorRampPalette(brewer.pal(8, "Set1"))(8)
-symnames <- c("GI", "ILI","Neuro", "Rash", "Resp")
-
-###################
-#ASSIGN DAYS TO BE USED AS BASELINE PERIOD
-###################
-bl.range <- paste(paste(seq(yesterday-380, yesterday-351, 1), collapse="|"),
-                  paste(seq(yesterday-745, yesterday-716, 1), collapse="|"), sep="|")
-
+# symcols <- colorRampPalette(brewer.pal(8, "Set1"))(8)
+# symnames <- c("GI", "ILI","Neuro", "Rash", "Resp")
 
 ###################
 #DEFINE AND SET WD
@@ -65,17 +58,6 @@ if ( Sys.info()["sysname"] == "Linux" ){
   public_gis <- "E:/fdoh/private/surv/gis"
 }
 
-###################
-#SET GRAPHICAL PARAMETERS
-###################
-def.par <- par(no.readonly = TRUE)
-par(def.par)
-
-###################
-#SET COLORS FOR SYNDROMES
-###################
-symcols <- colorRampPalette(brewer.pal(8, "Set1"))(8)
-symnames <- c("GI", "ILI","Neuro", "Rash", "Resp")
 
 ###################
 #READ IN UPDATED DATA
@@ -148,7 +130,7 @@ sym <- alachua %>%
 # hint: you should create five dataframes named: gi, ili, neuro, rash, resp
 # hint: use the which() function to subset sym
 table(sym$cat)
-ili2 <- sym[which(sym$cat=="ili"),]
+ili <- sym[which(sym$cat=="ili"),]
 gi <- sym[which(sym$cat=="gi"),]
 neuro <- sym[which(sym$cat=="neuro"),]  
 rash <- sym[which(sym$cat=="rash"),]
@@ -166,7 +148,6 @@ zip_df <- alachua %>%
   summarise(visits=n())
 
 
-
 #####
 # TASK 12: ADD A day COLUMN TO zip_df 
 #          THIS WILL BE DAY OF THE WEEK
@@ -180,49 +161,106 @@ zip_df$written_date <- format(zip_df$Date, format = "%B %d, %Y")
 zip_df$week_number <- format(zip_df$Date, format = "%U")
 #for day of week
 zip_df$dow <- format(zip_df$Date, format = "%a")
+#zip_df$dow <- format(zip_df$Date, format = "%A") # Capital A would give entire day of week
 
+head(zip_df)
 
 ######
 # TASK 13: ADD A day_num COLUMN WHICH WILL BE DAYS SINCE 2012-01-01
 ######
-# this one creates a column that numbers the days of the year, 1-65
-zip_df$day_num <- format(zip_df$Date, format = "%j")
-table(zip_df$day_num)
 
-#I'm not sure how to do days since jan 1 2012. 
+# define start_date, which is the date we'll be subtracting from our other dates
+start_date <- as.Date("2012-01-01", format = "%Y-%m-%d")
 
-nrow(zip_df)
-zip_df$day_num <-seq.int(nrow(zip_df))
-
+# create the day_num column, which is simply date minus
+zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 
 
 #this did number of day in each year (1-366), but do you want total number of day
 #since jan 1st 2012. What is that relevant in the regression?
+
+# Joe says: this is relevant to the regression because, for the last 3 years
+# there has been a slight (and linear) increase in the total number of ED visits
+# (see task # 7's chart)
+# by putting day_num into our model, we can make predictions on the present,
+# which are based on the past, but take into account this linear increase
+
+######
+# TASK 13.5: ADD A "SEASON" COLUMN (winter/spring/summer/fall)
+######
+# figure it out using if or ifelse functions with the Date column
 
 ######
 # TASK 14: WRITE A REGRESSION MODEL WHICH PREDICTS
 # visits AS A FUNCTION OF cat, day_num, day and Zipcode
 ######
 # I'm guessing we need to recode zipcode into a categorical varible
+# YES - do that
+
+# Notice that I made two changes in your regression equationi:
+# 1. I've renamed it 'fit' instead of mod1
+# 2. I've reworded it by taking away zip_df from each variable,
+#    and adding a data=zip_df argument to the function (makes it easier to read)
 
 
-mod1 <- lm(zip_df$visits ~ zip_df$cat + zip_df$day_num + zip_df$dow + zip_df$Zipcode)
-summary(mod1)
+# THREE MORE THINGS FOR YOU TO DO WITH THIS:
+# 1. Add season to the regression equation
+# 2. Make zipcode a factor
+# 3. For the data you're building your model on, DON'T INCLUDE YESTERDAY
+#    In other words, make a dataframe called model_data
+#    and this should be zip_df for which the date is NOT yesterday
+#    (the reason for doing this is that you don't want to make PREDICTIONS)
+#    on today, using today's observation in the prediction)
+fit <- lm(visits ~ cat + day_num + dow + Zipcode,
+          data = zip_df)
 
-
+summary(fit)
 
 ######
 # TASK 15: ADD A predicted COLUMN TO zip_df
 # WITH THE NUMBER OF VISITS WE WOULD HAVE PREDICTED
 ######
 
-mod1 <- lm(zip_df$visits ~ zip_df$cat + zip_df$day_num + zip_df$dow + zip_df$Zipcode)
-summary(mod1)
+# I changed the column name to PREDICTED
+zip_df$predicted <- predict(fit, 
+                            newdata = zip_df)
+summary(zip_df$predicted)
+head(zip_df, n = 10)
+
+######
+# TASK 16: CALCULATE CONFIDENCE/PREDICTION INTERVALS FOR OUR PREDICITION
+######
+
+# confidence_intervals
+confidence_intervals <- data.frame(predict(object = fit,
+                                           interval = "confidence",
+                                           newdata = zip_df,
+                                           level = 0.95))
+prediction_intervals <- data.frame(predict(object = fit,
+                                           interval = "prediction",
+                                           newdata = zip_df,
+                                           level = 0.95))
+
+######
+# TASK 17: USING prediction_intervals, MAKE A lwr AND upr
+# COLUMN IN zip_df
+######
 
 
+######
+# TASK 18: MAKE A COLUMN IN zip_df CALLED "ALERT"
+# THIS SHOULD BE A BOOLEAN
+# TRUE IF visits > upr, OTHERWISE IT'S FALSE
+######
 
-zip_df$predict <- predict(mod1, newdata = zip_df)
-summary(zip_df$predict)
+
+######
+# TASK 19: SUBSET zip_df TO MAKE A NEW DATAFRAME CALLED alerts
+# THIS SHOULD BE ONLY THE OBSERVATIONS FROM YESTERDAY
+# WHICH HAVE A < 0.05 CHANCE OF TAKING PLACE
+# IN OTHER WORDS, THOSE OBSERVATIONS FOR WHICH alert == TRUE
+######
+
 
 
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE
