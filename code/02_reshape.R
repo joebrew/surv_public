@@ -189,6 +189,39 @@ zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 # TASK 13.5: ADD A "SEASON" COLUMN (winter/spring/summer/fall)
 ######
 # figure it out using if or ifelse functions with the Date column
+#Ben: I'm sure there is a quicker way to do this, but I found out which day numbers 
+# are associated with each end of every season and then just used those day numbers
+# to recode with ifelse
+
+zip_df$Date <- as.factor(zip_df$Date)
+table(zip_df$Date)
+zip_df$day_num[which(zip_df$Date=="2012-03-20")]  #79
+zip_df$day_num[which(zip_df$Date=="2012-06-20")] #171
+zip_df$day_num[which(zip_df$Date=="2012-09-20")] #263
+zip_df$day_num[which(zip_df$Date=="2012-12-20")] #354
+zip_df$day_num[which(zip_df$Date=="2013-03-20")]  #444
+zip_df$day_num[which(zip_df$Date=="2013-06-20")] #536
+zip_df$day_num[which(zip_df$Date=="2013-09-20")] #628
+zip_df$day_num[which(zip_df$Date=="2013-12-20")] #719
+zip_df$day_num[which(zip_df$Date=="2014-03-20")] #809 
+zip_df$day_num[which(zip_df$Date=="2014-06-20")] #901
+zip_df$day_num[which(zip_df$Date=="2014-09-20")] #993
+zip_df$day_num[which(zip_df$Date=="2014-12-20")] #1084
+zip_df$day_num[which(zip_df$Date=="2015-01-17")] #1112
+
+zip_df$season <- factor(ifelse(zip_df$day_num <= 79, "winter", 
+                              ifelse(zip_df$day_num >= 80 & zip_df$day_num <= 170, "spring",
+                                     ifelse(zip_df$day_num >=171 & zip_df$day_num <= 262, "summer",
+                                            ifelse(zip_df$day_num >= 263 & zip_df$day_num <= 354, "fall",
+ifelse(zip_df$day_num >= 355 & zip_df$day_num <= 444, "winter",
+    ifelse(zip_df$day_num >= 445 & zip_df$day_num <= 535, "spring",
+       ifelse(zip_df$day_num >= 536 & zip_df$day_num <= 628, "summer", 
+            ifelse(zip_df$day_num >= 629 & zip_df$day_num <= 719,  "fall",
+                    ifelse(zip_df$day_num >= 710 & zip_df$day_num <= 809, "winter",
+                          ifelse(zip_df$day_num >= 810 & zip_df$day_num <= 901, "spring",
+                                ifelse(zip_df$day_num >= 901 & zip_df$day_num <= 993, "summer",
+                                      ifelse(zip_df$day_num >= 994 & zip_df$day_num <= 1084, "fall", "winter")))))))))))))
+
 
 ######
 # TASK 14: WRITE A REGRESSION MODEL WHICH PREDICTS
@@ -196,6 +229,8 @@ zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 ######
 # I'm guessing we need to recode zipcode into a categorical varible
 # YES - do that
+
+zip_df$Zipcode <- as.factor(zip_df$Zipcode)
 
 # Notice that I made two changes in your regression equationi:
 # 1. I've renamed it 'fit' instead of mod1
@@ -211,8 +246,13 @@ zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 #    and this should be zip_df for which the date is NOT yesterday
 #    (the reason for doing this is that you don't want to make PREDICTIONS)
 #    on today, using today's observation in the prediction)
-fit <- lm(visits ~ cat + day_num + dow + Zipcode,
-          data = zip_df)
+
+model_data <- zip_df[which(zip_df$Date != "2015-01-22"),]
+
+
+
+fit <- lm(visits ~ cat + day_num + dow + Zipcode + season,
+          data = model_data)
 
 summary(fit)
 
@@ -245,6 +285,8 @@ prediction_intervals <- data.frame(predict(object = fit,
 # TASK 17: USING prediction_intervals, MAKE A lwr AND upr
 # COLUMN IN zip_df
 ######
+zip_df$lwr <- select(prediction_intervals,lwr)
+
 
 
 ######
