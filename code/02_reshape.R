@@ -230,6 +230,8 @@ ifelse(zip_df$day_num >= 355 & zip_df$day_num <= 444, "winter",
 # I'm guessing we need to recode zipcode into a categorical varible
 # YES - do that
 
+#did you just want it read like a factor or do we want to call it somethin else?
+#maybe we could identify which zipcodes have certain characteristics wrt to income, race, etc.
 zip_df$Zipcode <- as.factor(zip_df$Zipcode)
 
 # Notice that I made two changes in your regression equationi:
@@ -247,12 +249,15 @@ zip_df$Zipcode <- as.factor(zip_df$Zipcode)
 #    (the reason for doing this is that you don't want to make PREDICTIONS)
 #    on today, using today's observation in the prediction)
 
+
+# I realize if I do it this way then i will have to modify it everytime I run the code. 
+
 model_data <- zip_df[which(zip_df$Date != "2015-01-22"),]
 
 
 
 fit <- lm(visits ~ cat + day_num + dow + Zipcode + season,
-          data = model_data)
+          data = model_data)# Is this where I want to ad the model_data?
 
 summary(fit)
 
@@ -285,6 +290,9 @@ prediction_intervals <- data.frame(predict(object = fit,
 # TASK 17: USING prediction_intervals, MAKE A lwr AND upr
 # COLUMN IN zip_df
 ######
+#this is where I am currently stuck. the code below is NOT good. 
+#im gonna do the uganda stuff to give myself a break.
+
 zip_df$lwr <- select(prediction_intervals,lwr)
 
 
