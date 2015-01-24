@@ -175,19 +175,16 @@ start_date <- as.Date("2012-01-01", format = "%Y-%m-%d")
 # create the day_num column, which is simply date minus
 zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 
-
-#this did number of day in each year (1-366), but do you want total number of day
-#since jan 1st 2012. What is that relevant in the regression?
-
-# Joe says: this is relevant to the regression because, for the last 3 years
-# there has been a slight (and linear) increase in the total number of ED visits
-# (see task # 7's chart)
-# by putting day_num into our model, we can make predictions on the present,
-# which are based on the past, but take into account this linear increase
-
 ######
 # TASK 13.5: ADD A "SEASON" COLUMN (winter/spring/summer/fall)
 ######
+
+# JOE SAYS: REDO THIS SECTION
+# FIRST, CREATE A DOY (day of year) COLUMN (using %j)
+#     this will be the nth day of the year (1-366)
+# THEN, YOUR IFELSE STATEMENT WILL NEED ONLY A FEW OPTIONS 
+#     ie, it won't have to go greater than 366, unlike what you did below
+
 # figure it out using if or ifelse functions with the Date column
 #Ben: I'm sure there is a quicker way to do this, but I found out which day numbers 
 # are associated with each end of every season and then just used those day numbers
@@ -252,12 +249,18 @@ zip_df$Zipcode <- as.factor(zip_df$Zipcode)
 
 # I realize if I do it this way then i will have to modify it everytime I run the code. 
 
+# JOE SAYS: You don't have to manually write in the date.
+# At the beginning of this script, you defined an object named yesterday
+# simply type yesterday in the console to see
+# so, for the model_data subset, you can just say != yesterday 
+# (that way it adjusts itself every time)
+
 model_data <- zip_df[which(zip_df$Date != "2015-01-22"),]
 
 
 
 fit <- lm(visits ~ cat + day_num + dow + Zipcode + season,
-          data = model_data)# Is this where I want to ad the model_data?
+          data = model_data)# Is this where I want to ad the model_data? YES
 
 summary(fit)
 
@@ -292,6 +295,7 @@ prediction_intervals <- data.frame(predict(object = fit,
 ######
 #this is where I am currently stuck. the code below is NOT good. 
 #im gonna do the uganda stuff to give myself a break.
+# JOE SAYS: Does this not run? It looks good to me.  Just make an upr too
 
 zip_df$lwr <- select(prediction_intervals,lwr)
 
