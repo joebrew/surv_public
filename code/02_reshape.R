@@ -23,7 +23,7 @@ library(dplyr)
 #SET DATE / TIME PARAMETERS
 ###################
 start.time <- Sys.time()
-today <- Sys.Date() 
+today <- Sys.Date()
 yesterday <- today - 1
 
 ###################
@@ -184,21 +184,21 @@ zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 #     this will be the nth day of the year (1-366)
 # THEN, YOUR IFELSE STATEMENT WILL NEED ONLY A FEW OPTIONS 
 #     ie, it won't have to go greater than 366, unlike what you did below
-zip_df$doy <- format(zip_df$Date, format = "%j")
+zip_df$DOY <- format(zip_df$Date, format = "%j")
 
-zip_df$doy[which(zip_df$Date=="2012-03-20")]  #080
-zip_df$doy[which(zip_df$Date=="2012-06-20")] #172
-zip_df$doy[which(zip_df$Date=="2012-09-20")] #264
-zip_df$doy[which(zip_df$Date=="2012-12-20")] #355
+zip_df$DOY[which(zip_df$Date=="2012-03-20")]  #080
+zip_df$DOY[which(zip_df$Date=="2012-06-20")] #172
+zip_df$DOY[which(zip_df$Date=="2012-09-20")] #264
+zip_df$DOY[which(zip_df$Date=="2012-12-20")] #355
 
-zip_df$Date <- as.factor(zip_df$Date)
+
 table(zip_df$Date)
 
-zip_df$Season <- factor(ifelse(zip_df$doy >= 001 & zip_df$doy <= 081, "winter",
-                       ifelse(zip_df$doy >= 082 & zip_df$doy <= 172, "spring",
-                              ifelse(zip_df$doy >= 173 & zip_df$doy <= 264, "summmer",
-                                   ifelse(zip_df$doy >= 265 & zip_df$doy <= 355, "fall", "winter")))))
-table(zip_df$doy)
+zip_df$Season <- factor(ifelse(zip_df$DOY >= 001 & zip_df$DOY <= 081, "winter",
+                    ifelse(zip_df$DOY >= 082 & zip_df$DOY <= 172, "spring",
+                      ifelse(zip_df$DOY >= 173 & zip_df$DOY <= 264, "summmer",
+                         ifelse(zip_df$DOY >= 265 & zip_df$DOY <= 355, "fall", "winter")))))
+
 table(zip_df$Season)
 ##
 
@@ -304,16 +304,24 @@ prediction_intervals <- data.frame(predict(object = fit,
 #im gonna do the uganda stuff to give myself a break.
 # JOE SAYS: Does this not run? It looks good to me.  Just make an upr too
 
-zip_df$lwr <- select(prediction_intervals,lwr)
+#ok I think I figured it out. the dlyr stuff wasn't working so I just created a new object 
+#and then merged it with zip_df
+prediction_lwr <-  prediction_intervals$lwr
+zip_df$lwr <-prediction_lwr
 
-# no it fucks up the whole data set, clearing all the rows and putting all the observations
-# lwr in the first row. 
+prediction_upr <- prediction_intervals$upr
+zip_df$upr <- prediction_intervals$upr
+
+#ok this works
 
 ######
 # TASK 18: MAKE A COLUMN IN zip_df CALLED "ALERT"
 # THIS SHOULD BE A BOOLEAN
 # TRUE IF visits > upr, OTHERWISE IT'S FALSE
 ######
+
+zip_df$ALERT <- factor(ifelse(zip_df$visits > zip_df$upr, "TRUE", "FALSE"))
+
 
 
 ######
@@ -322,6 +330,8 @@ zip_df$lwr <- select(prediction_intervals,lwr)
 # WHICH HAVE A < 0.05 CHANCE OF TAKING PLACE
 # IN OTHER WORDS, THOSE OBSERVATIONS FOR WHICH alert == TRUE
 ######
+
+alerts <- zip_df[which(zip_df$ALERTS== TRUE & zip_df$Date== yesterday)]
 
 
 
