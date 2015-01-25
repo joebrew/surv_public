@@ -179,95 +179,34 @@ zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 # TASK 13.5: ADD A "SEASON" COLUMN (winter/spring/summer/fall)
 ######
 
-# JOE SAYS: REDO THIS SECTION
 # FIRST, CREATE A DOY (day of year) COLUMN (using %j)
-#     this will be the nth day of the year (1-366)
-# THEN, YOUR IFELSE STATEMENT WILL NEED ONLY A FEW OPTIONS 
-#     ie, it won't have to go greater than 366, unlike what you did below
 zip_df$DOY <- format(zip_df$Date, format = "%j")
 
-zip_df$DOY[which(zip_df$Date=="2012-03-20")]  #080
-zip_df$DOY[which(zip_df$Date=="2012-06-20")] #172
-zip_df$DOY[which(zip_df$Date=="2012-09-20")] #264
-zip_df$DOY[which(zip_df$Date=="2012-12-20")] #355
-
-
-table(zip_df$Date)
-
+# Create season
 zip_df$Season <- factor(ifelse(zip_df$DOY >= 001 & zip_df$DOY <= 081, "winter",
                     ifelse(zip_df$DOY >= 082 & zip_df$DOY <= 172, "spring",
                       ifelse(zip_df$DOY >= 173 & zip_df$DOY <= 264, "summmer",
                          ifelse(zip_df$DOY >= 265 & zip_df$DOY <= 355, "fall", "winter")))))
+#looks good!
 
-table(zip_df$Season)
-##
-
-#I have tried a bunch of different things for this and its just not working. I dont know why. 
-#for the time being I'm gonna stick with the way I did, so I can move on. Let me know if 
-# you can see what I did wrong in the code above. 
-
-# figure it out using if or ifelse functions with the Date column
-#Ben: I'm sure there is a quicker way to do this, but I found out which day numbers 
-# are associated with each end of every season and then just used those day numbers
-# to recode with ifelse
-
-
-zip_df$season <- factor(ifelse(zip_df$day_num <= 79, "winter", 
-                              ifelse(zip_df$day_num >= 80 & zip_df$day_num <= 170, "spring",
-                                     ifelse(zip_df$day_num >=171 & zip_df$day_num <= 262, "summer",
-                                            ifelse(zip_df$day_num >= 263 & zip_df$day_num <= 354, "fall",
-ifelse(zip_df$day_num >= 355 & zip_df$day_num <= 444, "winter",
-    ifelse(zip_df$day_num >= 445 & zip_df$day_num <= 535, "spring",
-       ifelse(zip_df$day_num >= 536 & zip_df$day_num <= 628, "summer", 
-            ifelse(zip_df$day_num >= 629 & zip_df$day_num <= 719,  "fall",
-                    ifelse(zip_df$day_num >= 710 & zip_df$day_num <= 809, "winter",
-                          ifelse(zip_df$day_num >= 810 & zip_df$day_num <= 901, "spring",
-                                ifelse(zip_df$day_num >= 901 & zip_df$day_num <= 993, "summer",
-                                      ifelse(zip_df$day_num >= 994 & zip_df$day_num <= 1084, "fall", "winter")))))))))))))
-
-table(zip_df$season)
 ######
 # TASK 14: WRITE A REGRESSION MODEL WHICH PREDICTS
 # visits AS A FUNCTION OF cat, day_num, day and Zipcode
 ######
-# I'm guessing we need to recode zipcode into a categorical varible
-# YES - do that
 
-#did you just want it read like a factor or do we want to call it somethin else?
-#maybe we could identify which zipcodes have certain characteristics wrt to income, race, etc.
-zip_df$Zipcode <- as.factor(zip_df$Zipcode)
-
-# Notice that I made two changes in your regression equationi:
-# 1. I've renamed it 'fit' instead of mod1
-# 2. I've reworded it by taking away zip_df from each variable,
-#    and adding a data=zip_df argument to the function (makes it easier to read)
-
-
-# THREE MORE THINGS FOR YOU TO DO WITH THIS:
-# 1. Add season to the regression equation
-# 2. Make zipcode a factor
-# 3. For the data you're building your model on, DON'T INCLUDE YESTERDAY
-#    In other words, make a dataframe called model_data
-#    and this should be zip_df for which the date is NOT yesterday
-#    (the reason for doing this is that you don't want to make PREDICTIONS)
-#    on today, using today's observation in the prediction)
-
-
-# I realize if I do it this way then i will have to modify it everytime I run the code. 
-
-# JOE SAYS: You don't have to manually write in the date.
-# At the beginning of this script, you defined an object named yesterday
-# simply type yesterday in the console to see
-# so, for the model_data subset, you can just say != yesterday 
-# (that way it adjusts itself every time)
+# Create a factor version of zip code
+zip_df$Zipcode_fac <- as.factor(zip_df$Zipcode)
 
 model_data <- zip_df[which(zip_df$Date != yesterday),]
 #somtime when I run this code it works, other times it doesnt. 
 # what is wrong with  this?
+# If you're running from beginning to end, with a clean workspace, 
+# it should work every time
+# very important to clear your workspace and run sequentially each time
 
 
-fit <- lm(visits ~ cat + day_num + dow + Zipcode + season,
-          data = model_data)# Is this where I want to ad the model_data? YES
+fit <- lm(visits ~ cat + day_num + dow + Zipcode_fac + season,
+          data = model_data)
 
 summary(fit)
 
@@ -300,19 +239,12 @@ prediction_intervals <- data.frame(predict(object = fit,
 # TASK 17: USING prediction_intervals, MAKE A lwr AND upr
 # COLUMN IN zip_df
 ######
-#this is where I am currently stuck. the code below is NOT good. 
-#im gonna do the uganda stuff to give myself a break.
-# JOE SAYS: Does this not run? It looks good to me.  Just make an upr too
-
-#ok I think I figured it out. the dlyr stuff wasn't working so I just created a new object 
-#and then merged it with zip_df
-prediction_lwr <-  prediction_intervals$lwr
+prediction_lwr <- prediction_intervals$lwr
 zip_df$lwr <-prediction_lwr
 
 prediction_upr <- prediction_intervals$upr
 zip_df$upr <- prediction_intervals$upr
 
-#ok this works
 
 ######
 # TASK 18: MAKE A COLUMN IN zip_df CALLED "ALERT"
