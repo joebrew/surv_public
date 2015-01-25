@@ -23,7 +23,7 @@ library(dplyr)
 #SET DATE / TIME PARAMETERS
 ###################
 start.time <- Sys.time()
-today <- Sys.Date()  
+today <- Sys.Date() 
 yesterday <- today - 1
 
 ###################
@@ -184,27 +184,33 @@ zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 #     this will be the nth day of the year (1-366)
 # THEN, YOUR IFELSE STATEMENT WILL NEED ONLY A FEW OPTIONS 
 #     ie, it won't have to go greater than 366, unlike what you did below
+zip_df$doy <- format(zip_df$Date, format = "%j")
+
+zip_df$doy[which(zip_df$Date=="2012-03-20")]  #080
+zip_df$doy[which(zip_df$Date=="2012-06-20")] #172
+zip_df$doy[which(zip_df$Date=="2012-09-20")] #264
+zip_df$doy[which(zip_df$Date=="2012-12-20")] #355
+
+zip_df$Date <- as.factor(zip_df$Date)
+table(zip_df$Date)
+
+zip_df$Season <- factor(ifelse(zip_df$doy >= 001 & zip_df$doy <= 081, "winter",
+                       ifelse(zip_df$doy >= 082 & zip_df$doy <= 172, "spring",
+                              ifelse(zip_df$doy >= 173 & zip_df$doy <= 264, "summmer",
+                                   ifelse(zip_df$doy >= 265 & zip_df$doy <= 355, "fall", "winter")))))
+table(zip_df$doy)
+table(zip_df$Season)
+##
+
+#I have tried a bunch of different things for this and its just not working. I dont know why. 
+#for the time being I'm gonna stick with the way I did, so I can move on. Let me know if 
+# you can see what I did wrong in the code above. 
 
 # figure it out using if or ifelse functions with the Date column
 #Ben: I'm sure there is a quicker way to do this, but I found out which day numbers 
 # are associated with each end of every season and then just used those day numbers
 # to recode with ifelse
 
-zip_df$Date <- as.factor(zip_df$Date)
-table(zip_df$Date)
-zip_df$day_num[which(zip_df$Date=="2012-03-20")]  #79
-zip_df$day_num[which(zip_df$Date=="2012-06-20")] #171
-zip_df$day_num[which(zip_df$Date=="2012-09-20")] #263
-zip_df$day_num[which(zip_df$Date=="2012-12-20")] #354
-zip_df$day_num[which(zip_df$Date=="2013-03-20")]  #444
-zip_df$day_num[which(zip_df$Date=="2013-06-20")] #536
-zip_df$day_num[which(zip_df$Date=="2013-09-20")] #628
-zip_df$day_num[which(zip_df$Date=="2013-12-20")] #719
-zip_df$day_num[which(zip_df$Date=="2014-03-20")] #809 
-zip_df$day_num[which(zip_df$Date=="2014-06-20")] #901
-zip_df$day_num[which(zip_df$Date=="2014-09-20")] #993
-zip_df$day_num[which(zip_df$Date=="2014-12-20")] #1084
-zip_df$day_num[which(zip_df$Date=="2015-01-17")] #1112
 
 zip_df$season <- factor(ifelse(zip_df$day_num <= 79, "winter", 
                               ifelse(zip_df$day_num >= 80 & zip_df$day_num <= 170, "spring",
@@ -219,7 +225,7 @@ ifelse(zip_df$day_num >= 355 & zip_df$day_num <= 444, "winter",
                                 ifelse(zip_df$day_num >= 901 & zip_df$day_num <= 993, "summer",
                                       ifelse(zip_df$day_num >= 994 & zip_df$day_num <= 1084, "fall", "winter")))))))))))))
 
-
+table(zip_df$season)
 ######
 # TASK 14: WRITE A REGRESSION MODEL WHICH PREDICTS
 # visits AS A FUNCTION OF cat, day_num, day and Zipcode
@@ -255,8 +261,9 @@ zip_df$Zipcode <- as.factor(zip_df$Zipcode)
 # so, for the model_data subset, you can just say != yesterday 
 # (that way it adjusts itself every time)
 
-model_data <- zip_df[which(zip_df$Date != "2015-01-22"),]
-
+model_data <- zip_df[which(zip_df$Date != yesterday),]
+#somtime when I run this code it works, other times it doesnt. 
+# what is wrong with  this?
 
 
 fit <- lm(visits ~ cat + day_num + dow + Zipcode + season,
@@ -299,7 +306,8 @@ prediction_intervals <- data.frame(predict(object = fit,
 
 zip_df$lwr <- select(prediction_intervals,lwr)
 
-
+# no it fucks up the whole data set, clearing all the rows and putting all the observations
+# lwr in the first row. 
 
 ######
 # TASK 18: MAKE A COLUMN IN zip_df CALLED "ALERT"
