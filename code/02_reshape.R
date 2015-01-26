@@ -22,15 +22,8 @@ library(dplyr)
 ###################
 #SET DATE / TIME PARAMETERS
 ###################
-start.time <- Sys.time()
 today <- Sys.Date() 
 yesterday <- today - 1
-
-###################
-#SET COLORS FOR SYNDROMES
-###################
-# symcols <- colorRampPalette(brewer.pal(8, "Set1"))(8)
-# symnames <- c("GI", "ILI","Neuro", "Rash", "Resp")
 
 ###################
 #DEFINE AND SET WD
@@ -66,32 +59,9 @@ if ( Sys.info()["sysname"] == "Linux" ){
 setwd(private_today)
 load("cleaned.RData")
 
-###################################################################
-
-#####
-# GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS BY DAY, AND THEN PLOT
-#####
-
-x <- alachua %>%          
-  group_by(Date) %>%      
-  summarise(visits = n()) 
-
-plot(x = x$Date,
-     y = x$visits)
-
-#####
-#GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS FOR JUST ILI
-#####
-
-ili <- alachua %>% 
-  group_by(Date) %>% 
-  filter(cat=="ili") %>%
-  summarise(visits = n())
-
 #####
 # GET COUNTS AMONG ALACHUA RESIDENTS FOR ALL SYMPTOMS (cat = symptom)
 #####
- 
 sym <- alachua %>% 
   group_by(Date, cat) %>%
   summarise(visit= n())
@@ -99,8 +69,6 @@ sym <- alachua %>%
 #####
 # SUBSET SYM INTO APPROPRIATELY NAMED DATAFRAMES FOR EACH CAT
 #####
-
-table(sym$cat)
 ili <- sym[which(sym$cat=="ili"),]
 gi <- sym[which(sym$cat=="gi"),]
 neuro <- sym[which(sym$cat=="neuro"),]  
@@ -110,16 +78,11 @@ resp <- sym[which(sym$cat=="resp"),]
 #####
 # CREATE ONE DATAFRAME WITH ED COUNTS FOR ALL DATES, ZIP CODES AND SYMPTOMS
 #####
-
 zip_df <- alachua %>% 
   group_by(Date, Zipcode, cat) %>%
   summarise(visits=n())
 
-#####
 # ADD WEEK NUMBER, WRITTEN DATE, AND DAY OF WEEK COLUMNS TO zip_df 
-#####
-
-str(sym$Date)
 #for written dat
 zip_df$written_date <- format(zip_df$Date, format = "%B %d, %Y")
 #for week number
@@ -128,55 +91,58 @@ zip_df$week_number <- format(zip_df$Date, format = "%U")
 zip_df$dow <- format(zip_df$Date, format = "%a")
 #zip_df$dow <- format(zip_df$Date, format = "%A") # Capital A would give entire day of week
 
-######
 # ADD A day_num COLUMN WHICH WILL BE DAYS SINCE 2012-01-01
-######
-
 # define start_date, which is the date we'll be subtracting from our other dates
 start_date <- as.Date("2012-01-01", format = "%Y-%m-%d")
 
 # create the day_num column, which is simply date minus
 zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 
-######
-# ADD A "SEASON" COLUMN (winter/spring/summer/fall)
-######
 
+# ADD A "SEASON" COLUMN (winter/spring/summer/fall)
 # FIRST, CREATE A DOY (day of year) COLUMN
 zip_df$DOY <- format(zip_df$Date, format = "%j")
 
 # Create season-- Here is the code that is just not working. I've tried a bunch of different t
 # and I can't get it to work. Everytim there is either only winter, summer, fall, but no spring
 # of there is just winter.
-zip_df$Season <- factor(ifelse(zip_df$DOY >= 001 & zip_df$DOY <= 081, "winter",
+
+# IT'S NOT WORKING BECAUSE OF THE STRUCTURE OF DOY
+# CHECK THIS OUT BY TYPING str(zip_df$doy)
+# THIS TELLS YOU THAT IT'S CODED AS A CHARACTER VECTOR
+# AND WITH A CHARACTER VECTOR, YOU CAN'T DO ARITHMETIC (LESS THAN / GREATER THAN / ETC)
+# RECODE IT USING as.numeric() AND THEN YOUR ifelse() STATEMENT SHOULD WORK
+zip_df$season <- factor(ifelse(zip_df$DOY >= 001 & zip_df$DOY <= 081, "winter",
                     ifelse(zip_df$DOY >= 082 & zip_df$DOY <= 172, "spring",
                       ifelse(zip_df$DOY >= 173 & zip_df$DOY <= 264, "summmer",
                          ifelse(zip_df$DOY >= 265 & zip_df$DOY <= 355, "fall", "winter")))))
 
+# Create a factor version of zip code
+zip_df$Zipcode_fac <- as.factor(zip_df$Zipcode)
+
+#####
+# Convert zip_df back to regular dataframe (not dplyr's local data frame object)
+#####
+zip_df <- data.frame(zip_df)
 
 ######
 # WRITE A REGRESSION MODEL WHICH PREDICTS
 # visits AS A FUNCTION OF cat, day_num, day and Zipcode
 ######
-
-# Create a factor version of zip code
-zip_df$Zipcode_fac <- as.factor(zip_df$Zipcode)
-
 # Create new data frame with all observations except yesterday
 model_data <- zip_df[which(zip_df$Date != yesterday),]
 
-#Create model called fit.
-fit <- lm(visits ~ cat + day_num + dow + Zipcode_fac + season,
+#Create model called zip_fit.
+zip_fit <- lm(visits ~ cat + day_num + dow + Zipcode_fac + season,
           data = model_data)
 
-summary(fit)
+summary(zip_fit)
 
 ######
 # ADD A predicted COLUMN TO zip_df
 # WITH THE NUMBER OF VISITS WE WOULD HAVE PREDICTED
 ######
-
-zip_df$predicted <- predict(fit, 
+zip_df$predicted <- predict(zip_fit, 
                             newdata = zip_df)
 summary(zip_df$predicted)
 head(zip_df, n = 10)
@@ -184,13 +150,13 @@ head(zip_df, n = 10)
 ######
 # CALCULATE CONFIDENCE/PREDICTION INTERVALS FOR OUR PREDICITION
 ######
-
 # confidence_intervals
-confidence_intervals <- data.frame(predict(object = fit,
+confidence_intervals <- data.frame(predict(object = zip_fit,
                                            interval = "confidence",
                                            newdata = zip_df,
                                            level = 0.95))
-prediction_intervals <- data.frame(predict(object = fit,
+# prediction_intervals
+prediction_intervals <- data.frame(predict(object = zip_fit,
                                            interval = "prediction",
                                            newdata = zip_df,
                                            level = 0.95))
@@ -199,10 +165,7 @@ prediction_intervals <- data.frame(predict(object = fit,
 # USING prediction_intervals, MAKE A lwr AND upr
 # COLUMN IN zip_df
 ######
-prediction_lwr <- prediction_intervals$lwr
-zip_df$lwr <-prediction_lwr
-
-prediction_upr <- prediction_intervals$upr
+zip_df$lwr <- prediction_intervals$lwr
 zip_df$upr <- prediction_intervals$upr
 
 
@@ -212,8 +175,20 @@ zip_df$upr <- prediction_intervals$upr
 # TRUE IF visits > upr, OTHERWISE IT'S FALSE
 ######
 
-zip_df$ALERT <- factor(ifelse(zip_df$visits > zip_df$upr, "TRUE", "FALSE"))
+# DON'T PUT QUOTATIONS ON BOOLEANS (TRUE/FALSE)
+# ALSO, DON'T MAKE IT A FACTOR!
+zip_df$alert <- ifelse(zip_df$visits > zip_df$upr, TRUE, FALSE)
 
+# Visualize how our model is doing
+# by plotting observed vs. predicted
+# and coloring by alert status
+my_colors <- adjustcolor(ifelse(zip_df$alert, "darkred", "black"), alpha.f = 0.2)
+plot(x = zip_df$predicted,
+     y = zip_df$visits,
+     col = my_colors,
+     pch = 16)
+# Not bad, but it looks like it's pretty heavily skewed towards the large (in absolute)
+# zip codes - consider using logarithmic transformation?
 
 
 ######
@@ -232,17 +207,24 @@ alerts <- zip_df[which(zip_df$ALERTS== TRUE & zip_df$Date== yesterday)]
 ## and plots a time series visualization of the number of cases for that category
 ## plot should show four things: 1) predicted number, 2) observed number ¾) 95% conf range
 
-cat_data <- alachua %>% 
+cat_df <- alachua %>% 
   group_by(Date, cat) %>%
   summarise(visit= n())
 
-cat_data$DOY <- format(cat_data$Date, format = "%j")
+cat_df$DOY <- format(cat_df$Date, format = "%j")
 
-cat_data$Season <- factor(ifelse(cat_data$DOY >= 001 & cat_data$DOY <= 081, "winter",
-                               ifelse(cat_data$DOY >= 082 & cat_data$DOY <= 172, "spring",
-                                      ifelse(cat_data$DOY >= 173 & cat_data$DOY <= 264, "summmer",
-                                             ifelse(cat_data$DOY >= 265 & cat_data$DOY <= 355, "fall", "winter")))))
-table(cat_data$Season)
+cat_df$Season <- factor(ifelse(cat_df$DOY >= 001 & cat_df$DOY <= 081, "winter",
+                               ifelse(cat_df$DOY >= 082 & cat_df$DOY <= 172, "spring",
+                                      ifelse(cat_df$DOY >= 173 & cat_df$DOY <= 264, "summmer",
+                                             ifelse(cat_df$DOY >= 265 & cat_df$DOY <= 355, "fall", "winter")))))
+table(cat_df$Season)
+# Now build a regression
+
+################################
+# Finally, make a dataframe which has both zip AND cat
+# name it zip_cat_df
+# as with zip_df, give dates and seasons, and build a regression
+
 
 
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE
