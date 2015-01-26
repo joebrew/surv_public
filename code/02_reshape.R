@@ -23,7 +23,7 @@ library(dplyr)
 #SET DATE / TIME PARAMETERS
 ###################
 start.time <- Sys.time()
-today <- Sys.Date()
+today <- Sys.Date() 
 yesterday <- today - 1
 
 ###################
@@ -67,68 +67,39 @@ setwd(private_today)
 load("cleaned.RData")
 
 ###################################################################
-# You now have 3 dataframes:
-# 1. alachua = these are alachua county RESIDENTS' ED visits since 2012
-# 2. roi = these are records of interest (either from Alachua county residents or outsiders)
-#          in the last week
-# 3. alless2 = these are non-alachua residents who came to an Alachua hospital in the last week
-#
-# The main thing of interest for you is alachua 
-
 
 #####
-# TASK 7: GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS BY DAY, AND THEN PLOT
+# GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS BY DAY, AND THEN PLOT
 #####
 
-# Use dplyr syntax to reshape the data into a new dataframe named x
-# grouping by date
-# and creating a new variable (visits) which is simply the number of rows for each group
-# n() = number of rows [dplyr syntax]
-
-x <- alachua %>%          # read this as "x is alachua, then..."
-  group_by(Date) %>%      # group by Date, then...
-  summarise(visits = n()) # create a new variable, name it visits, and calculate the number of rows for each group
+x <- alachua %>%          
+  group_by(Date) %>%      
+  summarise(visits = n()) 
 
 plot(x = x$Date,
      y = x$visits)
 
 #####
-# TASK 8: GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS FOR JUST ILI #cat means category;
-#indicates what type of sickness- ILI is flu like sickness, but majority dont have sickness.
+#GET COUNTS (ED VISITS) AMONG ALACHUA RESIDENTS FOR JUST ILI
 #####
-# hint: like above, but use the filter() function
-# hint: you know which ones had ili but looking in the cat column
-# hint: your output should have two columns: Date, visits
-# order: name your output dataframe ili
-table(alachua$cat)
 
 ili <- alachua %>% 
   group_by(Date) %>% 
   filter(cat=="ili") %>%
   summarise(visits = n())
 
-#it took me 14 minutes just to figure this one out......
-
 #####
-# TASK 9: GET COUNTS AMONG ALACHUA RESIDENTS FOR ALL SYMPTOMS (cat = symptom)
-# all in one data frame
+# GET COUNTS AMONG ALACHUA RESIDENTS FOR ALL SYMPTOMS (cat = symptom)
 #####
-# hint: your output should have three columns: Date, visits, cat
-# order: name your output dataframe sym
-# I guess here you want me to filter for cat equal to any named symptom- gi, ili, neuro, rash, resp.
-table(alachua$cat)
-
+ 
 sym <- alachua %>% 
   group_by(Date, cat) %>%
   summarise(visit= n())
 
+#####
+# SUBSET SYM INTO APPROPRIATELY NAMED DATAFRAMES FOR EACH CAT
+#####
 
-#####
-# TASK 10: SUBSET SYM INTO APPROPRIATELY NAMED DATAFRAMES FOR EACH CAT
-#####
-# hint: use the which statement, writing 5 lines of code
-# hint: you should create five dataframes named: gi, ili, neuro, rash, resp
-# hint: use the which() function to subset sym
 table(sym$cat)
 ili <- sym[which(sym$cat=="ili"),]
 gi <- sym[which(sym$cat=="gi"),]
@@ -137,22 +108,16 @@ rash <- sym[which(sym$cat=="rash"),]
 resp <- sym[which(sym$cat=="resp"),]
 
 #####
-# TASK 11: CREATE ONE DATAFRAME WITH ED COUNTS FOR ALL DATES, ZIP CODES AND SYMPTOMS
+# CREATE ONE DATAFRAME WITH ED COUNTS FOR ALL DATES, ZIP CODES AND SYMPTOMS
 #####
-# hint, like task 7, but with more things in the group_by() function
-# hint: your final dataframe will have 4 columns: Date, Zipcode, cat, visits
-# order: name your dataframe zip_df
 
 zip_df <- alachua %>% 
   group_by(Date, Zipcode, cat) %>%
   summarise(visits=n())
 
-
 #####
-# TASK 12: ADD A day COLUMN TO zip_df 
-#          THIS WILL BE DAY OF THE WEEK
+# ADD WEEK NUMBER, WRITTEN DATE, AND DAY OF WEEK COLUMNS TO zip_df 
 #####
-# hint: use the format() function to format zip_df$Date
 
 str(sym$Date)
 #for written dat
@@ -163,10 +128,8 @@ zip_df$week_number <- format(zip_df$Date, format = "%U")
 zip_df$dow <- format(zip_df$Date, format = "%a")
 #zip_df$dow <- format(zip_df$Date, format = "%A") # Capital A would give entire day of week
 
-head(zip_df)
-
 ######
-# TASK 13: ADD A day_num COLUMN WHICH WILL BE DAYS SINCE 2012-01-01
+# ADD A day_num COLUMN WHICH WILL BE DAYS SINCE 2012-01-01
 ######
 
 # define start_date, which is the date we'll be subtracting from our other dates
@@ -176,53 +139,50 @@ start_date <- as.Date("2012-01-01", format = "%Y-%m-%d")
 zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 
 ######
-# TASK 13.5: ADD A "SEASON" COLUMN (winter/spring/summer/fall)
+# ADD A "SEASON" COLUMN (winter/spring/summer/fall)
 ######
 
-# FIRST, CREATE A DOY (day of year) COLUMN (using %j)
+# FIRST, CREATE A DOY (day of year) COLUMN
 zip_df$DOY <- format(zip_df$Date, format = "%j")
 
-# Create season
+# Create season-- Here is the code that is just not working. I've tried a bunch of different t
+# and I can't get it to work. Everytim there is either only winter, summer, fall, but no spring
+# of there is just winter.
 zip_df$Season <- factor(ifelse(zip_df$DOY >= 001 & zip_df$DOY <= 081, "winter",
                     ifelse(zip_df$DOY >= 082 & zip_df$DOY <= 172, "spring",
                       ifelse(zip_df$DOY >= 173 & zip_df$DOY <= 264, "summmer",
                          ifelse(zip_df$DOY >= 265 & zip_df$DOY <= 355, "fall", "winter")))))
-#looks good!
+
 
 ######
-# TASK 14: WRITE A REGRESSION MODEL WHICH PREDICTS
+# WRITE A REGRESSION MODEL WHICH PREDICTS
 # visits AS A FUNCTION OF cat, day_num, day and Zipcode
 ######
 
 # Create a factor version of zip code
 zip_df$Zipcode_fac <- as.factor(zip_df$Zipcode)
 
+# Create new data frame with all observations except yesterday
 model_data <- zip_df[which(zip_df$Date != yesterday),]
-#somtime when I run this code it works, other times it doesnt. 
-# what is wrong with  this?
-# If you're running from beginning to end, with a clean workspace, 
-# it should work every time
-# very important to clear your workspace and run sequentially each time
 
-
+#Create model called fit.
 fit <- lm(visits ~ cat + day_num + dow + Zipcode_fac + season,
           data = model_data)
 
 summary(fit)
 
 ######
-# TASK 15: ADD A predicted COLUMN TO zip_df
+# ADD A predicted COLUMN TO zip_df
 # WITH THE NUMBER OF VISITS WE WOULD HAVE PREDICTED
 ######
 
-# I changed the column name to PREDICTED
 zip_df$predicted <- predict(fit, 
                             newdata = zip_df)
 summary(zip_df$predicted)
 head(zip_df, n = 10)
 
 ######
-# TASK 16: CALCULATE CONFIDENCE/PREDICTION INTERVALS FOR OUR PREDICITION
+# CALCULATE CONFIDENCE/PREDICTION INTERVALS FOR OUR PREDICITION
 ######
 
 # confidence_intervals
@@ -236,7 +196,7 @@ prediction_intervals <- data.frame(predict(object = fit,
                                            level = 0.95))
 
 ######
-# TASK 17: USING prediction_intervals, MAKE A lwr AND upr
+# USING prediction_intervals, MAKE A lwr AND upr
 # COLUMN IN zip_df
 ######
 prediction_lwr <- prediction_intervals$lwr
@@ -247,7 +207,7 @@ zip_df$upr <- prediction_intervals$upr
 
 
 ######
-# TASK 18: MAKE A COLUMN IN zip_df CALLED "ALERT"
+# MAKE A COLUMN IN zip_df CALLED "ALERT"
 # THIS SHOULD BE A BOOLEAN
 # TRUE IF visits > upr, OTHERWISE IT'S FALSE
 ######
@@ -257,14 +217,32 @@ zip_df$ALERT <- factor(ifelse(zip_df$visits > zip_df$upr, "TRUE", "FALSE"))
 
 
 ######
-# TASK 19: SUBSET zip_df TO MAKE A NEW DATAFRAME CALLED alerts
+# SUBSET zip_df TO MAKE A NEW DATAFRAME CALLED alerts
 # THIS SHOULD BE ONLY THE OBSERVATIONS FROM YESTERDAY
 # WHICH HAVE A < 0.05 CHANCE OF TAKING PLACE
-# IN OTHER WORDS, THOSE OBSERVATIONS FOR WHICH alert == TRUE
 ######
 
 alerts <- zip_df[which(zip_df$ALERTS== TRUE & zip_df$Date== yesterday)]
 
+###############################################################################
+
+# Time series : write function to visualize each symptom
+## make a dataframe using dplyr, grouping on Date and cat
+## then write a function that takes as argument category
+## and plots a time series visualization of the number of cases for that category
+## plot should show four things: 1) predicted number, 2) observed number ¾) 95% conf range
+
+cat_data <- alachua %>% 
+  group_by(Date, cat) %>%
+  summarise(visit= n())
+
+cat_data$DOY <- format(cat_data$Date, format = "%j")
+
+cat_data$Season <- factor(ifelse(cat_data$DOY >= 001 & cat_data$DOY <= 081, "winter",
+                               ifelse(cat_data$DOY >= 082 & cat_data$DOY <= 172, "spring",
+                                      ifelse(cat_data$DOY >= 173 & cat_data$DOY <= 264, "summmer",
+                                             ifelse(cat_data$DOY >= 265 & cat_data$DOY <= 355, "fall", "winter")))))
+table(cat_data$Season)
 
 
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE
