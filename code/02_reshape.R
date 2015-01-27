@@ -262,13 +262,7 @@ cat_fit <- lm(visits ~ cat + day_num + dow  + season,
 summary(cat_fit)
 
 
-################################
-# Finally, make a dataframe which has both zip AND cat
-# name it zip_cat_df
-# as with zip_df, give dates and seasons, and build a regression
 
-#QUESTION: didn't we do this before in the zip_df data frame? it has variables 
-#for both zip and cat, right? 
 
 
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE
