@@ -103,17 +103,10 @@ zip_df$day_num <- as.numeric(zip_df$Date - start_date)
 # FIRST, CREATE A DOY (day of year) COLUMN
 zip_df$DOY <- format(zip_df$Date, format = "%j")
 
-# Create season-- Here is the code that is just not working. I've tried a bunch of different t
-# and I can't get it to work. Everytim there is either only winter, summer, fall, but no spring
-# of there is just winter.
+zip_df$DOY <- as.numeric(zip_df$DOY)
 
-# IT'S NOT WORKING BECAUSE OF THE STRUCTURE OF DOY
-# CHECK THIS OUT BY TYPING str(zip_df$doy)
-# THIS TELLS YOU THAT IT'S CODED AS A CHARACTER VECTOR
-# AND WITH A CHARACTER VECTOR, YOU CAN'T DO ARITHMETIC (LESS THAN / GREATER THAN / ETC)
-# RECODE IT USING as.numeric() AND THEN YOUR ifelse() STATEMENT SHOULD WORK
-zip_df$season <- factor(ifelse(zip_df$DOY >= 001 & zip_df$DOY <= 081, "winter",
-                    ifelse(zip_df$DOY >= 082 & zip_df$DOY <= 172, "spring",
+zip_df$season <- factor(ifelse(zip_df$DOY >= 1 & zip_df$DOY <= 81, "winter",
+                    ifelse(zip_df$DOY >= 82 & zip_df$DOY <= 172, "spring",
                       ifelse(zip_df$DOY >= 173 & zip_df$DOY <= 264, "summmer",
                          ifelse(zip_df$DOY >= 265 & zip_df$DOY <= 355, "fall", "winter")))))
 
@@ -175,8 +168,6 @@ zip_df$upr <- prediction_intervals$upr
 # TRUE IF visits > upr, OTHERWISE IT'S FALSE
 ######
 
-# DON'T PUT QUOTATIONS ON BOOLEANS (TRUE/FALSE)
-# ALSO, DON'T MAKE IT A FACTOR!
 zip_df$alert <- ifelse(zip_df$visits > zip_df$upr, TRUE, FALSE)
 
 # Visualize how our model is doing
@@ -187,9 +178,30 @@ plot(x = zip_df$predicted,
      y = zip_df$visits,
      col = my_colors,
      pch = 16)
+
 # Not bad, but it looks like it's pretty heavily skewed towards the large (in absolute)
 # zip codes - consider using logarithmic transformation?
+summary(zip_df$visits)
+summary(zip_df$predicted)
 
+plot(x= log(zip_df$predicted),
+     y = log(zip_df$visits),
+     col = my_colors,
+     pch = 16)
+
+#taking the log of the variables gives us the NaNs warning because R can't take the log of
+#a negative number (zip_df$predicted has neg visits) unless we transform our variables into complex numbers
+
+zip_df$predicted_com <- as.complex(zip_df$predicted)
+
+plot(x= log(zip_df$predicted_com),
+     y = log(zip_df$visits),
+     col = my_colors,
+     pch = 16)
+
+#this changes the graph a bit, but still gives a warning message of "imaginary parts
+#discarded, which is probably ok since negative visits don't make sense anyway. We still
+#have a problem of skewness though.
 
 ######
 # SUBSET zip_df TO MAKE A NEW DATAFRAME CALLED alerts
@@ -207,24 +219,56 @@ alerts <- zip_df[which(zip_df$ALERTS== TRUE & zip_df$Date== yesterday)]
 ## and plots a time series visualization of the number of cases for that category
 ## plot should show four things: 1) predicted number, 2) observed number ¾) 95% conf range
 
+#create new object with 3 columns: date, cat, and visits
 cat_df <- alachua %>% 
   group_by(Date, cat) %>%
-  summarise(visit= n())
+  summarise(visits= n())
+
+#make new column with day of year for cat_df
 
 cat_df$DOY <- format(cat_df$Date, format = "%j")
 
-cat_df$Season <- factor(ifelse(cat_df$DOY >= 001 & cat_df$DOY <= 081, "winter",
-                               ifelse(cat_df$DOY >= 082 & cat_df$DOY <= 172, "spring",
+#make it numeric
+
+cat_df$DOY <- as.numeric(cat_df$DOY)
+
+#create column for seasons
+cat_df$season <- factor(ifelse(cat_df$DOY >= 1 & cat_df$DOY <= 81, "winter",
+                               ifelse(cat_df$DOY >= 82 & cat_df$DOY <= 172, "spring",
                                       ifelse(cat_df$DOY >= 173 & cat_df$DOY <= 264, "summmer",
                                              ifelse(cat_df$DOY >= 265 & cat_df$DOY <= 355, "fall", "winter")))))
-table(cat_df$Season)
+
+
+#create column for day of week in cat_df
+cat_df$dow <- format(cat_df$Date, format = "%a")
+
+# Create a column of days since 2012-01-01 like before
+
+cat_df$day_num <- as.numeric(cat_df$Date - start_date)
+
+# Convert zicat_df back to regular dataframe 
+
+cat_df <- data.frame(cat_df)
+
 # Now build a regression
+
+# like before, create new data frame with all observations except yesterday
+cat_data <- cat_df[which(cat_df$Date != yesterday),]
+
+#Create model called zip_fit.
+cat_fit <- lm(visits ~ cat + day_num + dow  + season,
+              data = cat_data)
+
+summary(cat_fit)
+
 
 ################################
 # Finally, make a dataframe which has both zip AND cat
 # name it zip_cat_df
 # as with zip_df, give dates and seasons, and build a regression
 
+#QUESTION: didn't we do this before in the zip_df data frame? it has variables 
+#for both zip and cat, right? 
 
 
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE
