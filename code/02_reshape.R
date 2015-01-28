@@ -170,6 +170,10 @@ zip_df$upr <- prediction_intervals$upr
 
 zip_df$alert <- ifelse(zip_df$visits > zip_df$upr, TRUE, FALSE)
 
+#create column to indicate if visits is lower than lwr
+
+zip_df$undr <- ifelse(zip_df$visits < zip_df$lwr, TRUE, FALSE)
+
 # Visualize how our model is doing
 # by plotting observed vs. predicted
 # and coloring by alert status
@@ -179,10 +183,44 @@ plot(x = zip_df$predicted,
      col = my_colors,
      pch = 16)
 
+# with visits under our lower bound instead of alert
+
+my_colors <- adjustcolor(ifelse(zip_df$undr, "darkred", "black"), alpha.f = 0.2)
+plot(x = zip_df$predicted,
+     y = zip_df$visits,
+     col = my_colors,
+     pch = 16)
+
+#together- both underestimates- all visits outside of out CI. 
+
+my_colors <- adjustcolor(ifelse(zip_df$undr, "darkblue",
+                                ifelse(zip_df$alert, "darkred", "black")), alpha.f = 0.2)
+plot(x = zip_df$predicted,
+     y = zip_df$visits,
+     col = my_colors,
+     pch = 16)
+
+#We would want a linear relationship right? and ideally a model that does not over or under
+#predict too much. It seems like our model is bad when there are high number of visits, it 
+#underpredicts. 
+
+#For starters, maybe we can restric zip_df$predicted to be positive, since it 
+#doesn't make sense to have negative visits.
+
+zip_df$predicted[zip_df$predicted < 0] <- 0
+
+
+my_colors <- adjustcolor(ifelse(zip_df$undr, "darkblue",
+                                ifelse(zip_df$alert, "darkred", "black")), alpha.f = 0.2)
+plot(x = zip_df$predicted,
+     y = zip_df$visits,
+     col = my_colors,
+     pch = 16)
+
+
 # Not bad, but it looks like it's pretty heavily skewed towards the large (in absolute)
 # zip codes - consider using logarithmic transformation?
-summary(zip_df$visits)
-summary(zip_df$predicted)
+
 
 plot(x= log(zip_df$predicted),
      y = log(zip_df$visits),
@@ -200,8 +238,8 @@ plot(x= log(zip_df$predicted_com),
      pch = 16)
 
 #this changes the graph a bit, but still gives a warning message of "imaginary parts
-#discarded, which is probably ok since negative visits don't make sense anyway. We still
-#have a problem of skewness though.
+#discarded, but also we the log(0) is undefined so I think it's fucking up our graph a bit. 
+#maybe the log is not the best solution.
 
 ######
 # SUBSET zip_df TO MAKE A NEW DATAFRAME CALLED alerts
@@ -255,14 +293,62 @@ cat_df <- data.frame(cat_df)
 # like before, create new data frame with all observations except yesterday
 cat_data <- cat_df[which(cat_df$Date != yesterday),]
 
-#Create model called zip_fit.
+#Create model called cat_fit.
 cat_fit <- lm(visits ~ cat + day_num + dow  + season,
               data = cat_data)
 
 summary(cat_fit)
 
+cat_df$predicted <- predict(cat_fit, 
+                            newdata = cat_df)
+summary(cat_df$predicted)
+head(cat_df, n = 10)
+
+##########################################################################################
+# confidence_intervals
+confidence_intervals_cat <- data.frame(predict(object = cat_fit,
+                                           interval = "confidence",
+                                           newdata = cat_df,
+                                           level = 0.95))
+# prediction_intervals
+prediction_intervals_cat <- data.frame(predict(object = cat_fit,
+                                           interval = "prediction",
+                                           newdata = cat_df,
+                                           level = 0.95))
+
+######
+# USING prediction_intervals, MAKE A lwr AND upr
+# COLUMN IN zip_df
+######
+cat_df$lwr <- prediction_intervals_cat$lwr
+cat_df$upr <- prediction_intervals_cat$upr
 
 
+######
+# MAKE A COLUMN IN zip_df CALLED "ALERT"
+# THIS SHOULD BE A BOOLEAN
+# TRUE IF visits > upr, OTHERWISE IT'S FALSE
+######
+
+cat_df$alert <- ifelse(cat_df$visits > cat_df$upr, TRUE, FALSE)
+
+#create column to indicate if visits is lower than lwr
+
+cat_df$undr <- ifelse(cat_df$visits < cat_df$lwr, TRUE, FALSE)
+
+
+
+#making visual like before just with cat data instead
+#together- both underestimates- all visits outside of out CI. 
+
+my_colors <- adjustcolor(ifelse(cat_df$undr, "darkblue",
+                                ifelse(cat_df$alert, "darkred", "black")), alpha.f = 0.2)
+plot(x = cat_df$predicted,
+     y = cat_df$visits,
+     col = my_colors,
+     pch = 16)
+
+cat_df$predicted[cat_df$predicted < 0] <- 0
 
 
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE
