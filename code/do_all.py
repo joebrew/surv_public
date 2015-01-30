@@ -1,13 +1,19 @@
-# -*- coding: utf-8 -*-
-# <nbformat>3.0</nbformat>
-
-# <codecell>
+#Import necessary libraries
+import mechanize
+import cookielib
+from BeautifulSoup import BeautifulSoup
+import html2text
+import pandas as pd
+import subprocess
+import rpy2.robjects as robjects
 
 # Get today's date
 import time
 today = time.strftime("%Y-%m-%d")
 
-# <codecell>
+# Get yesterday's date
+from datetime import datetime, timedelta
+yesterday = (datetime.today() - timedelta(days=1)).strftime("%b %d %Y")
 
 # Specify which directories we'll be using (different on Ben vs. Joe-linux vs. Joe-Windows)
 import platform
@@ -18,14 +24,13 @@ if 'joebrew' in plat:
 elif 'benbrew' in plat:
     private = '/home/benbrew/Documents/private/surv/'
     public = '/home/benbrew/Documents/surv_public'
-
 else:
     private = 'E:/fdoh/private/surv'
     public = 'C:/Users/BrewJR/Documents/surv_public'
 
 private_today = private + '/' + today
 
-# <codecell>
+plat
 
 # If necessary, create today's directory
 # and set working directory there
@@ -35,31 +40,14 @@ if not os.path.exists(private_today):
 
 os.chdir(private)
 
-# <codecell>
-
-# Import necessary libraries
-import mechanize
-import cookielib
-from BeautifulSoup import BeautifulSoup
-import html2text
-import pandas as pd
-import subprocess
-import rpy2.robjects as robjects
-
-# <codecell>
-
 # Run the r script to get the dates and URLs for today's data download
 os.chdir(public)
 robjects.r['source']("code/00_get_links.R")
-
-# <codecell>
 
 # Read in which links I need for today
 import pandas as pd
 os.chdir(private)
 todays_links = pd.read_csv('todays_links.csv')
-
-# <codecell>
 
 # Browser
 br = mechanize.Browser()
@@ -68,7 +56,6 @@ br = mechanize.Browser()
 cj = cookielib.LWPCookieJar()
 br.set_cookiejar(cj)
 
-# <codecell>
 
 # Browser options
 br.set_handle_equiv(True)
@@ -79,8 +66,6 @@ br.set_handle_robots(False)
 br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
 
 br.addheaders = [('User-agent', 'Chrome')]
-
-# <codecell>
 
 # The site we will navigate into, handling it's session
 br.open('https://www.essencefl.com/florida_5_1_14/servlet/Login')
@@ -93,22 +78,13 @@ br.open('https://www.essencefl.com/florida_5_1_14/servlet/Login')
 # Select the second (index one) form (the first form is a search query box)
 br.select_form(nr=0)
 
-# <codecell>
-
 # Read in credentials
-pu = pd.read_csv('/home/joebrew/Documents/private/essence/pu.csv', dtype = 'string')
+os.chdir(private)
+pu = pd.read_csv('essence/pu.csv', dtype = 'string')
 
-# <codecell>
-
-#u = u.read()
-#p = p.read()
-
-# <codecell>
-
+# Extract ESSENCE username and password from the pu file
 u = list(pu['u'])[0]
 p = list(pu['p'])[0]
-
-# <codecell>
 
 # User credentials
 br.form['j_username'] = u
@@ -117,21 +93,22 @@ br.form['j_password'] = p
 # Login
 br.submit()
 
-# <codecell>
 
-# Set working directory to today's private folder
-os.chdir(private_today)
+# Check to see if Alachua has reported yet
+reported_yet = br.open('https://www.essencefl.com/florida_5_1_14/servlet/HomePageServlet')
+reported_text = reported_yet.read()
+if 'Alachua              reporting (2/2) hospitals for ' + yesterday in reported_text:
+    print 'Good to go - both hospitals are reporting'
+else:
+    print 'Stop here - not all hospitals have reported yet for today'
 
-# <codecell>
-
+# Loop through each link, download the data for that link, and write that data to a file
 for i in range(0,9,1):
     my_file = br.open(todays_links[0:]['link'][i])
     # Write a text file
     f = open(todays_links[0:]['file'][i], 'w')
     f.write(my_file.read())
     f.close()
-
-# <codecell>
 
 # If zap files are needed, copy and paste them into the new folder
 import shutil
@@ -145,18 +122,13 @@ copy_zap('zap.Rnw')
 copy_zap('doh.png')
 copy_zap('zap_compile.R')
 
-# <codecell>
-
 # Run the zap file (daily surveillance)
-#os.chdir(private_today)
-#robjects.r['source']("zap.R")
-
-# <codecell>
+os.chdir(private_today)
+robjects.r['source']("zap.R")
 
 # Compile the pdf
-#os.chdir(private_today)
-#robjects.r['source']("zap_compile.R")
+os.chdir(private_today)
+os.system('ls -l -h')
+os.system('R CMD Sweave --pdf zap.Rnw')
 
-# <codecell>
-
-
+os.system('gnome-open zap.pdf')
