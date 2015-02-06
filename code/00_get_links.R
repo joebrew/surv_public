@@ -63,7 +63,7 @@ get_link <- function(syndrome = NULL,
   
   # Start date
   if(is.null(start_date)){
-    start_date <- paste0("startDate=", format(Sys.Date() - 7, format = "%d%b%Y"), "&")
+    start_date <- paste0("startDate=", format(Sys.Date() - 15, format = "%d%b%Y"), "&")
   } else {
     start_date <- format(start_date, format = "%d%b%Y")
   }
