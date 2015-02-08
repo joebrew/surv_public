@@ -6,6 +6,7 @@ import html2text
 import pandas as pd
 import subprocess
 import rpy2.robjects as robjects
+import re
 
 # Get today's date
 import time
@@ -97,12 +98,14 @@ br.submit()
 # Check to see if Alachua has reported yet
 reported_yet = br.open('https://www.essencefl.com/florida_5_1_14/servlet/HomePageServlet')
 reported_text = reported_yet.read()
-if 'Alachua              reporting (2/2) hospitals for ' + yesterday in reported_text:
+cleaned_yesterday = re.sub(' 0', '  ', yesterday)
+if r'Alachua              reporting (2\/2) hospitals for ' + cleaned_yesterday in reported_text:
     print 'Good to go - both hospitals are reporting'
 else:
     print 'Stop here - not all hospitals have reported yet for today'
 
 # Loop through each link, download the data for that link, and write that data to a file
+os.chdir(private_today)
 for i in range(0,9,1):
     my_file = br.open(todays_links[0:]['link'][i])
     # Write a text file
