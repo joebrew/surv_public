@@ -339,7 +339,7 @@ cat_df$undr <- ifelse(cat_df$visits < cat_df$lwr, TRUE, FALSE)
 
 
 #making visual like before just with cat data instead
-#together- both underestimates- all visits outside of out CI. 
+#together- both underestimates and overestimates- all visits outside of out CI. 
 
 my_colors <- adjustcolor(ifelse(cat_df$undr, "darkblue",
                                 ifelse(cat_df$alert, "darkred", "black")), alpha.f = 0.2)
@@ -348,9 +348,50 @@ plot(x = cat_df$predicted,
      col = my_colors,
      pch = 16)
 
+#why is there this huge break in the graph?
+
+
+#make negative values zero since negative visits are impossible
 cat_df$predicted[cat_df$predicted < 0] <- 0
 
+#round up and down decimal points less than 1, because log of a decimal less that 1 is negative,
+#which we dont want. 
+cat_df$predicted[cat_df$predicted < .5] <- 0
+cat_df$predicted[cat_df$predicted > .5 & cat_df$predicted < 1] <- 1
 
+my_colors <- adjustcolor(ifelse(cat_df$undr, "darkblue",
+                                ifelse(cat_df$alert, "darkred", "black")), alpha.f = 0.2)
+
+#with log
+
+plot(x= log(cat_df$predicted),
+     y = log(cat_df$visits),
+     col = my_colors,
+     pch = 16)
+
+
+axes_sc <-pretty(c(0,6))
+plot(x= log(cat_df$predicted_com),
+     y = log(cat_df$visits),
+     col = my_colors,
+     pch = 16,
+     xlim=c(0,max(axes_sc)),
+     ylim=c(0,max(axes_sc)),
+     yaxt="n",
+     axes=F
+)
+
+axis(1,at=axes_sc)
+axis(2,at=axes_sc,las=1)
+lines(1,1)
+abline(lm(cat_df$predicted ~ cat_df$visits))
+
+
+#having issues. i will continue to work on this because i think our prediction with
+#out the zipcodes is a better one, but i am having trouble getting rid of the zero
+#in the prediction model. 
+
+#what should I work on next?
 ################################ FOR NOW, IGNORE EVERYTHING BELOW THIS LINE
 
 # ###################
