@@ -22,7 +22,7 @@ library(dplyr)
 ###################
 #SET DATE / TIME PARAMETERS
 ###################
-today <- Sys.Date() 
+today <- Sys.Date() - 31
 yesterday <- today - 1
 
 ###################
@@ -122,6 +122,86 @@ zip_df <- data.frame(zip_df)
 # WRITE A REGRESSION MODEL WHICH PREDICTS
 # visits AS A FUNCTION OF cat, day_num, day and Zipcode
 ######
+#add weather as a variable 
+
+library(weatherData)
+
+# Get weather for just one day
+getWeatherForDate("GNV", "2014-04-14")
+
+# Get weather for a period of time
+
+x <- getSummarizedWeather("GNV", start_date = as.Date("2012-01-01", format = "%Y-%m-%d"),
+                          end_date = as.Date("2015-01-23", format = "%Y-%m-%d"),
+                          opt_custom_columns = TRUE,
+                          custom_columns = c(2,4,20))
+
+y <- getSummarizedWeather("GNV", start_date = as.Date("2013-02-02", format = "%Y-%m-%d"),
+                          end_date = as.Date("2015-01-23", format = "%Y-%m-%d"),
+                          opt_custom_columns = TRUE,
+                          custom_columns = c(2,4,20))
+
+z <- getSummarizedWeather("GNV", start_date = as.Date("2014-03-07", format = "%Y-%m-%d"),
+                          end_date = as.Date("2015-01-23", format = "%Y-%m-%d"),
+                          opt_custom_columns = TRUE,
+                          custom_columns = c(2,4,20))
+
+weather <- rbind(x, y, z)
+
+#assign number to dates so i can drop the most recent dates as df only goes until the 
+#23rd of jan. no need to do this  when i update the code. 
+start_date <- as.Date("2012-01-01", format = "%Y-%m-%d")
+
+# create the day_num column, which is simply date minus
+weather$Date <- as.Date(weather$Date)
+weather$day_num <- as.numeric(weather$Date - start_date)
+
+#drop dates passed the 23rd of jan
+
+weather[which(weather$Date==today),]
+
+#nevermind it only went up to the 23rd 
+#merge weather and zip_df 
+
+df_final <- left_join(x = zip_df, 
+                y = weather)
+
+#creat column for city, county using zipcodes
+zip_df$county <- factor(ifelse(zip_df$Zipcode_fac == "32601", "Gainesville, AC",
+                               ifelse(zip_df$Zipcode_fac == "32602", "Gainesville, AC",
+                                      ifelse(zip_df$Zipcode_fac == "32603", "Gainesville, AC",
+ifelse(zip_df$Zipcode_fac == "32604", "Gainesville, AC",
+       ifelse(zip_df$Zipcode_fac == "32605", "Gainesville, AC",  
+              ifelse(zip_df$Zipcode_fac == "32606", "Gainesville, AC",
+                     ifelse(zip_df$Zipcode_fac == "32607", "Gainesville, AC",
+                            ifelse(zip_df$Zipcode_fac == "32608", "Gainesville, AC",
+                                   ifelse(zip_df$Zipcode_fac == "32609", "Gainesville, AC",
+ifelse(zip_df$Zipcode_fac == "32610", "Gainesville, AC",
+       ifelse(zip_df$Zipcode_fac == "32611", "Gainesville, AC",
+              ifelse(zip_df$Zipcode_fac == "32612", "Gainesville, AC",
+                     ifelse(zip_df$Zipcode_fac == "32614", "Gainesville, AC",
+                            ifelse(zip_df$Zipcode_fac == "32615", "Santa Fe, AC",
+                                   ifelse(zip_df$Zipcode_fac == "32616", "Alachua, AC",
+ifelse(zip_df$Zipcode_fac == "32618", "Archer, AC",
+       ifelse(zip_df$Zipcode_fac == "32627", "Gainesville, AC",
+              ifelse(zip_df$Zipcode_fac == "32631", "Earleton, AC",
+                     ifelse(zip_df$Zipcode_fac == "32633", "Evinston, MC",
+                            ifelse(zip_df$Zipcode_fac == "32635", "Gainesville, AC",
+                                   ifelse(zip_df$Zipcode_fac == "32640", "Hawthorne, Cross Creek, PC",
+ifelse(zip_df$Zipcode_fac == "32641", "Gainesville, AC",
+       ifelse(zip_df$Zipcode_fac == "32643", "High Springs, AC",
+              ifelse(zip_df$Zipcode_fac == "32653", "Gainesville, AC",
+                     ifelse(zip_df$Zipcode_fac == "32654", "Island Grove, AC",
+                            ifelse(zip_df$Zipcode_fac == "32655", "High Springs, AC",
+                                   ifelse(zip_df$Zipcode_fac == "32658", "La Crosse, AC",
+ifelse(zip_df$Zipcode_fac == "32662", "Lochloosa, AC",
+       ifelse(zip_df$Zipcode_fac == "32667", "Michanopy, AC",
+              ifelse(zip_df$Zipcode_fac == "32669", "Newberry, Tioga, Jonesville, AC", 
+                     "Waldo, AC")))))))))))))))))))))))))))))))
+                     
+                              
+
+
 # Create new data frame with all observations except yesterday
 model_data <- zip_df[which(zip_df$Date != yesterday),]
 
@@ -131,6 +211,12 @@ zip_fit <- lm(visits ~ cat + day_num + dow + Zipcode_fac + season,
 
 summary(zip_fit)
 
+#Create model called zip_fit1 with city/county in place of zip code. 
+
+zip_fit1 <- lm(visits ~ cat + day_num + dow + county + season,
+              data = model_data)
+
+summary(zip_fit1)
 ######
 # ADD A predicted COLUMN TO zip_df
 # WITH THE NUMBER OF VISITS WE WOULD HAVE PREDICTED
