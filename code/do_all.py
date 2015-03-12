@@ -19,12 +19,15 @@ yesterday = (datetime.today() - timedelta(days=1)).strftime("%b %d %Y")
 # Specify which directories we'll be using (different on Ben vs. Joe-linux vs. Joe-Windows)
 import platform
 plat = platform.uname()
-if 'joebrew' in plat:
-    private = '/media/joebrew/JB/fdoh/private/surv'
-    public = '/home/joebrew/Documents/surv_public'
-elif 'benbrew' in plat:
+if 'benbrew' in plat:
     private = '/home/benbrew/Documents/private/surv/'
     public = '/home/benbrew/Documents/surv_public'
+elif 'joebrew' in plat:
+    private = '/media/joebrew/JB/fdoh/private/surv'
+    public = '/home/joebrew/Documents/surv_public'
+elif 'Linux' in plat:
+    private = '/media/joebrew/JB/fdoh/private/surv'
+    public = '/home/joebrew/Documents/surv_public'
 else:
     private = 'E:/fdoh/private/surv'
     public = 'C:/Users/BrewJR/Documents/surv_public'
