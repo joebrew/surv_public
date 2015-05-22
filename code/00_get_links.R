@@ -2,6 +2,9 @@
 #SET DATE / TIME PARAMETERS
 ###################
 today <- Sys.Date() 
+
+# Adjust for oddity
+# today <- today - 1
 yesterday <- today - 1
 
 ###################

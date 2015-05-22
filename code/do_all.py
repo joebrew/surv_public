@@ -16,6 +16,13 @@ today = time.strftime("%Y-%m-%d")
 from datetime import datetime, timedelta
 yesterday = (datetime.today() - timedelta(days=1)).strftime("%b %d %Y")
 
+# Adjust for oddity
+#today = (datetime.today() - timedelta(days=1))#.strftime("%b %d %Y")
+#yesterday = (datetime.today() - timedelta(days=2)).strftime("%b %d %Y")
+#today = today.strftime("%Y-%m-%d")
+
+print 'today is ' + today
+print 'yesterday is ' + yesterday
 # Specify which directories we'll be using (different on Ben vs. Joe-linux vs. Joe-Windows)
 import platform
 plat = platform.uname()
@@ -34,7 +41,7 @@ else:
 
 private_today = private + '/' + today
 
-plat
+print plat
 
 # If necessary, create today's directory
 # and set working directory there

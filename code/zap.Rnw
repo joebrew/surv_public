@@ -244,79 +244,79 @@ title(main="Resp", outer=TRUE, cex.main=0.75, line=-0.3)
 
 
 
-\newgeometry{margin=2.5cm}
-\begin{center}
-\section*{New section: Hotspots}
-\addcontentsline{toc}{section}{New section: Hotspots}
-\end{center}
-\begin{figure}[H]
-\begin{center}
-<<height=1.8, fig=TRUE>>=
-par(mar=c(1,0,0,0))
-par(oma = c(0,0,0,0))
-my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
-
-SurfaceFun("gi")
-title(main="GI", outer=TRUE, cex.main=0.75, line=-0.6)
-@
-\end{center}
-\end{figure}
-\vspace{-10mm}
-
-
-\begin{figure}[H]
-\begin{center}
-<<height=1.8, fig=TRUE>>=
-par(mar=c(1,0,0,0))
-par(oma = c(0,0,0,0))
-my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
-SurfaceFun("ili")
-title(main="ILI", outer=TRUE, cex.main=0.75, line=-0.6)
-@
-\end{center}
-\end{figure}
-\vspace{-10mm}
-
-\begin{figure}[H]
-\begin{center}
-<<height=1.8, fig=TRUE>>=
-par(mar=c(1,0,0,0))
-par(oma = c(0,0,0,0))
-my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
-SurfaceFun("neuro")
-title(main="Neurological", outer=TRUE, cex.main=0.75, line=-0.6)
-@
-\end{center}
-\end{figure}
-\vspace{-10mm}
-
-\begin{figure}[H]
-\begin{center}
-<<height=1.8, fig=TRUE>>=
-par(mar=c(1,0,0,0))
-par(oma = c(0,0,0,0))
-my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
-
-SurfaceFun("rash")
-title(main="Rash", outer=TRUE, cex.main=0.75, line=-0.6)
-@
-\end{center}
-\end{figure}
-\vspace{-10mm}
-
-\begin{figure}[H]
-\begin{center}
-<<height=1.8, fig=TRUE>>=
-par(mar=c(1,0,0,0))
-par(oma = c(0,0,0,0))
-my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
-
-SurfaceFun("resp")
-title(main="Respiratory", outer=TRUE, cex.main=0.75, line=-0.6)
-@
-\end{center}
-\end{figure}
-\vspace{-10mm}
+% \newgeometry{margin=2.5cm}
+% \begin{center}
+% \section*{New section: Hotspots}
+% \addcontentsline{toc}{section}{New section: Hotspots}
+% \end{center}
+% \begin{figure}[H]
+% \begin{center}
+% <<height=1.8, fig=TRUE>>=
+% par(mar=c(1,0,0,0))
+% par(oma = c(0,0,0,0))
+% my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
+% 
+% SurfaceFun("gi")
+% title(main="GI", outer=TRUE, cex.main=0.75, line=-0.6)
+% @
+% \end{center}
+% \end{figure}
+% \vspace{-10mm}
+% 
+% 
+% \begin{figure}[H]
+% \begin{center}
+% <<height=1.8, fig=TRUE>>=
+% par(mar=c(1,0,0,0))
+% par(oma = c(0,0,0,0))
+% my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
+% SurfaceFun("ili")
+% title(main="ILI", outer=TRUE, cex.main=0.75, line=-0.6)
+% @
+% \end{center}
+% \end{figure}
+% \vspace{-10mm}
+% 
+% \begin{figure}[H]
+% \begin{center}
+% <<height=1.8, fig=TRUE>>=
+% par(mar=c(1,0,0,0))
+% par(oma = c(0,0,0,0))
+% my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
+% SurfaceFun("neuro")
+% title(main="Neurological", outer=TRUE, cex.main=0.75, line=-0.6)
+% @
+% \end{center}
+% \end{figure}
+% \vspace{-10mm}
+% 
+% \begin{figure}[H]
+% \begin{center}
+% <<height=1.8, fig=TRUE>>=
+% par(mar=c(1,0,0,0))
+% par(oma = c(0,0,0,0))
+% my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
+% 
+% SurfaceFun("rash")
+% title(main="Rash", outer=TRUE, cex.main=0.75, line=-0.6)
+% @
+% \end{center}
+% \end{figure}
+% \vspace{-10mm}
+% 
+% \begin{figure}[H]
+% \begin{center}
+% <<height=1.8, fig=TRUE>>=
+% par(mar=c(1,0,0,0))
+% par(oma = c(0,0,0,0))
+% my_colors <- colorRampPalette(c("blue", "yellow", "red"))(100)
+% 
+% SurfaceFun("resp")
+% title(main="Respiratory", outer=TRUE, cex.main=0.75, line=-0.6)
+% @
+% \end{center}
+% \end{figure}
+% \vspace{-10mm}
 
 
 
