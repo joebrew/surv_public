@@ -5,11 +5,15 @@ from BeautifulSoup import BeautifulSoup
 import html2text
 import pandas as pd
 import subprocess
+import rpy2
 import rpy2.robjects as robjects
 import re
+import time
+import platform
+import os
+import shutil
 
 # Get today's date
-import time
 today = time.strftime("%Y-%m-%d")
 
 # Get yesterday's date
@@ -24,7 +28,6 @@ yesterday = (datetime.today() - timedelta(days=1)).strftime("%b %d %Y")
 print 'today is ' + today
 print 'yesterday is ' + yesterday
 # Specify which directories we'll be using (different on Ben vs. Joe-linux vs. Joe-Windows)
-import platform
 plat = platform.uname()
 if 'benbrew' in plat:
     private = '/home/benbrew/Documents/private/surv/'
@@ -45,7 +48,6 @@ print plat
 
 # If necessary, create today's directory
 # and set working directory there
-import os
 if not os.path.exists(private_today):
   os.makedirs(private_today)
 
@@ -56,7 +58,6 @@ os.chdir(public)
 robjects.r['source']("code/00_get_links.R")
 
 # Read in which links I need for today
-import pandas as pd
 os.chdir(private)
 todays_links = pd.read_csv('todays_links.csv')
 
@@ -124,7 +125,6 @@ for i in range(0,9,1):
     f.close()
 
 # If zap files are needed, copy and paste them into the new folder
-import shutil
 def copy_zap(file_name):
    if not file_name in os.listdir(private_today):
     shutil.copyfile(src = public + '/code/' + file_name, 

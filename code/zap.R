@@ -1176,66 +1176,66 @@ boundary <- unionSpatialPolygons(boundary, rep(1, length(boundary@polygons)))
 
 # Define color vector
 my_colors <- colorRampPalette(c("blue", "red"))(100)
-
-SurfaceFun <- function(disease = "ili",
-                       boundary_shape = boundary){
-  
-  
-  
-  # getting coordinates of alachua boundary
-  boundary_points <- boundary@polygons[[1]]@Polygons
-  boundary_points <- boundary_points[[1]]@coords
-  
-  # Get trap locations and data values
-  a <- data.frame("x" = zip.map$x,
-                  "y" = zip.map$y,
-                  "z" = zip[,paste0(disease, "per")])
-  # Make into a geodata object
-  b <- as.geodata(a)
-  
-  # Predict multiple points in Alachua County's boundary
-  x <- seq(min(boundary_points[,1]), max(boundary_points[,1]), length = 100)
-  y <- seq(min(boundary_points[,2]), max(boundary_points[,2]), length = 100)
-  
-  # Make a grid of those points
-  pred.grid <- expand.grid(x,y)
-  
-  
-  # kriging calculations
-  kc <- krige.conv(geodata = b, coords = b$coords, data = b$data,
-                   locations = pred.grid,
-                   borders = boundary_points,
-                   #borders = boundary@polygons,
-                   # borders = ALACHUA BORDERS!,
-                   krige = krige.control(type.krige = "ok",
-                                         cov.pars = c(5000,10000000))) #10, 3.33 # what is this?
-  
-  
-  
-  # Plot!
-  # displaying predicted values
-  image(kc, loc = pred.grid, 
-        col = my_colors,
-        xlab=NA, ylab=NA,
-        xaxt = "n",
-        yaxt = "n",
-        xpd = NA,
-        bty = "n")
-  
-  # Define percentiles for legend
-  legtemp <-  round(quantile(kc$predict, probs = seq(0,1,, length = 10)))
-  
-  legend(x="topright",
-         fill = my_colors[c(1,11,22,33,44,55,66,77,88,100)],
-         legend = c(legtemp[1], NA, NA, legtemp[4], NA, NA, legtemp[7], NA, NA, legtemp[10]),
-         border = FALSE,
-         bty = "n",
-         ncol = 1,
-         y.intersp = 0.5,
-         title = "Interpolation",
-         cex = 0.75)
-}
-SurfaceFun("neuro")
+# 
+# SurfaceFun <- function(disease = "ili",
+#                        boundary_shape = boundary){
+#   
+#   
+#   
+#   # getting coordinates of alachua boundary
+#   boundary_points <- boundary@polygons[[1]]@Polygons
+#   boundary_points <- boundary_points[[1]]@coords
+#   
+#   # Get trap locations and data values
+#   a <- data.frame("x" = zip.map$x,
+#                   "y" = zip.map$y,
+#                   "z" = zip[,paste0(disease, "per")])
+#   # Make into a geodata object
+#   b <- as.geodata(a)
+#   
+#   # Predict multiple points in Alachua County's boundary
+#   x <- seq(min(boundary_points[,1]), max(boundary_points[,1]), length = 100)
+#   y <- seq(min(boundary_points[,2]), max(boundary_points[,2]), length = 100)
+#   
+#   # Make a grid of those points
+#   pred.grid <- expand.grid(x,y)
+#   
+#   
+#   # kriging calculations
+#   kc <- krige.conv(geodata = b, coords = b$coords, data = b$data,
+#                    locations = pred.grid,
+#                    borders = boundary_points,
+#                    #borders = boundary@polygons,
+#                    # borders = ALACHUA BORDERS!,
+#                    krige = krige.control(type.krige = "ok",
+#                                          cov.pars = c(5000,10000000))) #10, 3.33 # what is this?
+#   
+#   
+#   
+#   # Plot!
+#   # displaying predicted values
+#   image(kc, loc = pred.grid, 
+#         col = my_colors,
+#         xlab=NA, ylab=NA,
+#         xaxt = "n",
+#         yaxt = "n",
+#         xpd = NA,
+#         bty = "n")
+#   
+#   # Define percentiles for legend
+#   legtemp <-  round(quantile(kc$predict, probs = seq(0,1,, length = 10)))
+#   
+#   legend(x="topright",
+#          fill = my_colors[c(1,11,22,33,44,55,66,77,88,100)],
+#          legend = c(legtemp[1], NA, NA, legtemp[4], NA, NA, legtemp[7], NA, NA, legtemp[10]),
+#          border = FALSE,
+#          bty = "n",
+#          ncol = 1,
+#          y.intersp = 0.5,
+#          title = "Interpolation",
+#          cex = 0.75)
+# }
+# SurfaceFun("neuro")
 
 
 
