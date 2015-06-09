@@ -5,12 +5,13 @@ from BeautifulSoup import BeautifulSoup
 import html2text
 import pandas as pd
 import subprocess
+import os
+#os.environ['R_HOME']='/usr/lib/R'
 import rpy2
 import rpy2.robjects as robjects
 import re
 import time
 import platform
-import os
 import shutil
 
 # Get today's date
@@ -55,7 +56,8 @@ os.chdir(private)
 
 # Run the r script to get the dates and URLs for today's data download
 os.chdir(public)
-robjects.r['source']("code/00_get_links.R")
+os.system('Rscript code/00_get_links.R')
+#robjects.r['source']("code/00_get_links.R")
 
 # Read in which links I need for today
 os.chdir(private)
@@ -137,7 +139,9 @@ copy_zap('zap_compile.R')
 
 # Run the zap file (daily surveillance)
 os.chdir(private_today)
-robjects.r['source']("zap.R")
+os.system('Rscript zap.R')
+#os.system('R CMD BATCH --no-save --no-restore zap.R')
+#robjects.r['source']("zap.R")
 
 # Compile the pdf
 os.chdir(private_today)

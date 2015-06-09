@@ -9,7 +9,7 @@ yesterday <- today - 1
 ###################
 #DEFINE AND SET WD
 ###################
-
+print('setting working directories')
 if ( Sys.info()["sysname"] == "Linux" ){
   
   private_surv <- paste0("/media/joebrew/JB/fdoh/private/surv/", today)
@@ -37,6 +37,7 @@ q <- 15 #HOW FAR BACK DO I WANT PLOTS TO GO?
 ###################
 #LOAD  PACKAGES
 ###################
+print('loading packages')
 library(RColorBrewer)
 library(xtable)
 library(gdata)
@@ -45,15 +46,21 @@ library(maps)
 library(mapdata)
 library(maptools)
 library(rJava)
-library(OpenStreetMap)
 library(rgdal)
+library(OpenStreetMap)
 library(shapefiles)
 library(SemiPar)
 library(wordcloud)
 library(RCurl)
 library(classInt)
 library(data.table)
-#library(dplyr)
+library(dplyr)
+library(gstat)
+library(geoR)
+#library(scatterplot3d)
+library(RColorBrewer)
+library(maptools)
+print('packages loaded')
 
 ###################
 #SET GRAPHICAL PARAMETERS
@@ -70,6 +77,7 @@ symnames <- c("GI", "ILI","Neuro", "Rash", "Resp")
 ###################
 #READ IN DATA FROM ESSENCE
 ###################
+print('reading in data')
 setwd(private_surv) 
 
 alless <- read.table("alless.txt", sep= ",", header=TRUE)
@@ -83,11 +91,12 @@ roi <- read.table("roi.txt", sep= ",",
                   header=TRUE, colClasses = "character")
 roi2 <- read.table("roi2.txt", sep= ",", 
                    header=TRUE, colClasses = "character")
-
+print('data read in')
 
 ###################
 #ADD A CCDDCATEGORY COLUMN
 ###################
+print('cleaning data')
 gi$cat <- "gi"
 ili$cat <- "ili"
 neuro$cat <- "neuro"
@@ -131,9 +140,13 @@ symOld <- read.csv("symOldUpdated.csv")
 #rash1213$cat <- "rash"
 #resp1213$cat <- "resp"
 
+print('data cleaned')
+cat('data cleaned\n')
+cat('\n')
 ###################
 #READ IN GIS COORDINATES FOR ZIP CODES
 ###################
+print('reading in GIS data')
 setwd(public_gis)
 joelatlong <- read.csv("joelatlong.csv", header=TRUE, sep=",") #This is the GIS data for zip code
 setwd(private_surv)
@@ -141,6 +154,7 @@ setwd(private_surv)
 ###################
 #COMBINE THE 5 TRACKED SYMPTOM FILES
 ###################
+print('reformatting data')
 sym <- as.data.frame(rbind(gi, ili, neuro, rash, resp))
 
 ###################
@@ -173,7 +187,7 @@ bl.range <- paste(paste(seq(yesterday-380, yesterday-351, 1), collapse="|"),
 ###################
 #CLEAN UP RACE COLUMN
 ###################
-
+cat('more cleaning')
 black <- "BLA*|AFR*|*BLA|*AFR|Bla*|Afr*|*Bla*|*Afr"
 white <- "WHI*|CAUC*|*WHI|*CAUC|Whi*|Cauc*|*Whi|*Cauc"
 
@@ -204,6 +218,7 @@ alless2$race <- factor(ifelse(regexpr(black, alless2$Race_flat) >0, "black",
 ###################
 #COMBINE THE OLD AND NEW DATA
 ###################
+cat('updating historical database')
 symOld$X <- NULL
 alless1213$X <- NULL
 #gi1213$X <- NULL
@@ -213,16 +228,6 @@ alless1213$X <- NULL
 #resp1213$X <- NULL
 
 alless1213 <- alless1213[,c("Date", "Age", "Zipcode",
-                        "MedRecNo", "Sex", "CCDD",
-                        "Region", "Time", "HalfHour", 
-                        "Hospital", "Region.of.the.Hospital",
-                        "CCDDCategory_flat", "Race_flat",
-                        "Disposition.Category",
-                        "HospitalName",
-                        "HospitalZipCode", "race")]
-
-
-alless <- alless[,c("Date", "Age", "Zipcode",
                             "MedRecNo", "Sex", "CCDD",
                             "Region", "Time", "HalfHour", 
                             "Hospital", "Region.of.the.Hospital",
@@ -232,24 +237,34 @@ alless <- alless[,c("Date", "Age", "Zipcode",
                             "HospitalZipCode", "race")]
 
 
+alless <- alless[,c("Date", "Age", "Zipcode",
+                    "MedRecNo", "Sex", "CCDD",
+                    "Region", "Time", "HalfHour", 
+                    "Hospital", "Region.of.the.Hospital",
+                    "CCDDCategory_flat", "Race_flat",
+                    "Disposition.Category",
+                    "HospitalName",
+                    "HospitalZipCode", "race")]
+
+
 sym <- sym[,c("Date", "Age", "Zipcode",
-                            "MedRecNo", "Sex", "CCDD",
-                            "Region", "Time", "HalfHour", 
-                            "Hospital", "Region.of.the.Hospital",
-                            "CCDDCategory_flat", "Race_flat",
-                            "Disposition.Category",
-                            "HospitalName",
-                            "HospitalZipCode", "race", "cat")]
+              "MedRecNo", "Sex", "CCDD",
+              "Region", "Time", "HalfHour", 
+              "Hospital", "Region.of.the.Hospital",
+              "CCDDCategory_flat", "Race_flat",
+              "Disposition.Category",
+              "HospitalName",
+              "HospitalZipCode", "race", "cat")]
 
 
 symOld <- symOld[,c("Date", "Age", "Zipcode",
-                            "MedRecNo", "Sex", "CCDD",
-                            "Region", "Time", "HalfHour", 
-                            "Hospital", "Region.of.the.Hospital",
-                            "CCDDCategory_flat", "Race_flat",
-                            "Disposition.Category",
-                            "HospitalName",
-                            "HospitalZipCode", "race", "cat")]
+                    "MedRecNo", "Sex", "CCDD",
+                    "Region", "Time", "HalfHour", 
+                    "Hospital", "Region.of.the.Hospital",
+                    "CCDDCategory_flat", "Race_flat",
+                    "Disposition.Category",
+                    "HospitalName",
+                    "HospitalZipCode", "race", "cat")]
 
 
 symOld <- rbind(symOld[which(symOld$Date < min(sym$Date)),], sym)
@@ -259,10 +274,12 @@ alless1213 <- rbind(alless1213[which(alless1213$Date < min(alless$Date)),],alles
 ###################
 #WRITE HISTORICAL CSVs
 ###################
+cat('writing new historical csvs')
 setwd(private_historical)
 write.csv(symOld, "symOldUpdated.csv")
 write.csv(alless1213, "alless1213updated.csv")
 #write.csv(alless1213, "alless1213updated_backup_2014-10-01.csv")
+cat('new historical csvs written')
 
 
 ###################
@@ -274,6 +291,7 @@ alless1213$bl <- grepl(bl.range, alless1213$Date)
 ###################
 #MAP SET UP
 ###################
+cat('Starting map stuff\n')
 setwd(paste0(private, "/gis/alachuazipcodes"))
 zip.map <- readShapePoly("ACDPS_zipcode.shp")
 zip.map$Zipcode <- zip.map$ZIP
@@ -306,6 +324,7 @@ for (i in tolower(symnames)){
 ###################
 # POPULATE WITH VALUES
 ###################
+cat('getting zip code specific counts\n')
 #YESTERDAY
 for (i in zip$Zipcode){
   for (j in tolower(symnames)){    
@@ -365,24 +384,25 @@ giyest <- sym[which(sym$Date == yesterday &
 giyest <- giyest[order(giyest$Zipcode),]
 
 iliyest <- sym[which(sym$Date == yesterday &
-                      sym$cat == "ili"),]
+                       sym$cat == "ili"),]
 iliyest <- iliyest[order(iliyest$Zipcode),]
 
 neuroyest <- sym[which(sym$Date == yesterday &
-                      sym$cat == "neuro"),]
+                         sym$cat == "neuro"),]
 neuroyest <- neuroyest[order(neuroyest$Zipcode),]
 
 rashyest <- sym[which(sym$Date == yesterday &
-                      sym$cat == "rash"),]
+                        sym$cat == "rash"),]
 rashyest <- rashyest[order(rashyest$Zipcode),]
 
 respyest <- sym[which(sym$Date == yesterday &
-                      sym$cat == "resp"),]
+                        sym$cat == "resp"),]
 respyest <- respyest[order(respyest$Zipcode),]
 
 ###################
 #HEAT DF
 ###################
+cat('Heat calendar \n')
 heat <- as.data.frame(unique(sort(alless1213$Date)))
 colnames(heat) <- "Date"
 
@@ -629,6 +649,7 @@ calendarHeat <- function(dates,
 ###################
 # BASELINES AND MATH
 ###################
+cat('Baseline arithmetic\n')
 blgi <- sum(dist$gi) / length(dist$gi)
 blili <- sum(dist$ili) / length(dist$ili)
 blneuro <- sum(dist$neuro) / length(dist$neuro)
@@ -646,6 +667,7 @@ blrespq <- quantile(dist$resp, c(.05, .95), na.rm=T)
 ###################
 #GEOGRAPHICAL FLAG
 ###################
+cat('Cluster flagging \n')
 geoCluster <- as.data.frame(zip$Zipcode)
 colnames(geoCluster) <- "Zipcode"
 
@@ -695,6 +717,7 @@ for (i in tolower(symnames)){
 ###################
 #RECORD OF INTEREST TABLES
 ###################
+cat('ROI table clean up\n')
 roc <- roi[c("Date", "Age", "MedRecNo", "Sex", "CCDD", "Region", "Hospital")]
 roc$Date <- as.character(roc$Date)
 
@@ -708,6 +731,7 @@ roc$Date <- as.character(roc$Date)
 ###################
 #WORD CLOUD
 ###################
+cat('Starting word cloud\n')
 remove <- "[|]|[(]|[])]|/|;|:|[(*]|&|-[)]|[(]|[-]|[--])"
 myWords <- unlist(strsplit(as.character(gsub(remove,"",
                                              toupper(alless$CCDD[which(alless$Date == yesterday)]))), " "))
@@ -772,11 +796,11 @@ wordcloud(words=myCloud$word,
           rot.per=0,
           colors=myCloud$color[order(myCloud$prop^3)],
           ordered.colors=FALSE)
-
+cat('word cloud done\n')
 ###################
 #FLAG TABLE
 ###################
-
+cat('Starting flag table\n')
 #FUNCTION TO CONVERT TEXT TO REGEXPR SEARCH TERM
 regexFun <- function(x){
   paste(substr(x,1,5),"*","|",
@@ -800,9 +824,9 @@ flag$Baseline <- as.numeric(as.character(flag$Baseline))
 #CAPITALIZE FIRST LETTER FUNCTION
 capwords <- function(s, strict = FALSE) {
   cap <- function(s) paste(toupper(substring(s, 1, 1)),
-{s <- substring(s, 2); if(strict) tolower(s) else s},
-sep = "", collapse = " " )
-sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))}
+                           {s <- substring(s, 2); if(strict) tolower(s) else s},
+                           sep = "", collapse = " " )
+  sapply(strsplit(s, split = " "), cap, USE.NAMES = !is.null(names(s)))}
 
 
 #CREATE SEARCH TERMS
@@ -834,7 +858,7 @@ for (i in colnames(flagSearch[2:(length(flag$Word)+1)])){
   legend(x="topleft", bty="n", border=FALSE, cex=0.6, lwd=3, col=adjustcolor("blue", alpha.f=0.2),
          legend="2012 seasonal baseline")}
 par(mfrow=c(1,1))
-
+cat('Flag table done\n')
 ###################
 #ILI YEAR TO YEAR COMPARISON
 ###################
@@ -874,7 +898,7 @@ heat$j <- as.numeric(format(heat$Date, format="%j"))
 ###################
 # FUNCTION TIME!!!!
 ###################
-
+cat('Defining visualization functions\n')
 #### MapCases
 MapCases <- function(variable, color){
   plotvar <- variable
@@ -1070,7 +1094,7 @@ RaceFun(variable = giyest$race,
 TimeSeriesFun(variable = heat$ili,
               color=symcols[2])
 
-
+cat('Visualization functions done\n')
 ###################
 #MAKE OVERALL (LAST 7 days)
 ###################
@@ -1099,6 +1123,7 @@ dailysums <-round(dailysums, digits=1)
 ###################
 # SPECIAL SEARCHES
 ###################
+cat('Special searches\n')
 rabies <- alless1213[which(regexpr("rabies*|RABIES*|Rabies*|bite*|Bite*|BITE*", alless1213$CCDD)>0 &
                              grepl("insect|INSECT", alless1213$CCDD) == FALSE),]
 rabiesyest <- rabies[which(rabies$Date == yesterday),]
@@ -1113,8 +1138,8 @@ nadiaFun <- function(x){
   View(z)}
 
 examineFun <- function(x){
-   alless1213[which(regexpr(regexFun(x), alless1213$CCDD)>0 &
-                      alless1213$Date > yesterday - 6),]
+  alless1213[which(regexpr(regexFun(x), alless1213$CCDD)>0 &
+                     alless1213$Date > yesterday - 6),]
 }
 
 spice <- examineFun("MARIJUANA|SYNTHETIC|K2|SPICE")
@@ -1152,90 +1177,84 @@ wnv <- alless[which(grepl(regexFun("WEST NILE|WNV|OCULAR"), alless$CCDD)>0 &
 # 
 # 
 # nrow(mers)
-
-###################
-# SURFACE FUNCTION
-##################
-
-
-library(gstat)
-library(geoR)
-library(rgdal)
-#library(scatterplot3d)
-library(RColorBrewer)
-
-# Read in boundary
-#boundary <- readOGR("E:/fdoh/private/surv/Alachua_Boundary", "Alachua_Boundary")
-
-boundary <- zip.map # have to do this due to lack of projection system
-library(maptools)
-boundary <- unionSpatialPolygons(boundary, rep(1, length(boundary@polygons)))
-
-# # Read in population
-# pop <- readOGR("E:/fdoh/private/surv/Alachua_CT_POP", "Alachua_CT_POP")
-
-# Define color vector
-my_colors <- colorRampPalette(c("blue", "red"))(100)
+cat('Skipping surface function\n')
+# ###################
+# # SURFACE FUNCTION
+# ##################
 # 
-# SurfaceFun <- function(disease = "ili",
-#                        boundary_shape = boundary){
-#   
-#   
-#   
-#   # getting coordinates of alachua boundary
-#   boundary_points <- boundary@polygons[[1]]@Polygons
-#   boundary_points <- boundary_points[[1]]@coords
-#   
-#   # Get trap locations and data values
-#   a <- data.frame("x" = zip.map$x,
-#                   "y" = zip.map$y,
-#                   "z" = zip[,paste0(disease, "per")])
-#   # Make into a geodata object
-#   b <- as.geodata(a)
-#   
-#   # Predict multiple points in Alachua County's boundary
-#   x <- seq(min(boundary_points[,1]), max(boundary_points[,1]), length = 100)
-#   y <- seq(min(boundary_points[,2]), max(boundary_points[,2]), length = 100)
-#   
-#   # Make a grid of those points
-#   pred.grid <- expand.grid(x,y)
-#   
-#   
-#   # kriging calculations
-#   kc <- krige.conv(geodata = b, coords = b$coords, data = b$data,
-#                    locations = pred.grid,
-#                    borders = boundary_points,
-#                    #borders = boundary@polygons,
-#                    # borders = ALACHUA BORDERS!,
-#                    krige = krige.control(type.krige = "ok",
-#                                          cov.pars = c(5000,10000000))) #10, 3.33 # what is this?
-#   
-#   
-#   
-#   # Plot!
-#   # displaying predicted values
-#   image(kc, loc = pred.grid, 
-#         col = my_colors,
-#         xlab=NA, ylab=NA,
-#         xaxt = "n",
-#         yaxt = "n",
-#         xpd = NA,
-#         bty = "n")
-#   
-#   # Define percentiles for legend
-#   legtemp <-  round(quantile(kc$predict, probs = seq(0,1,, length = 10)))
-#   
-#   legend(x="topright",
-#          fill = my_colors[c(1,11,22,33,44,55,66,77,88,100)],
-#          legend = c(legtemp[1], NA, NA, legtemp[4], NA, NA, legtemp[7], NA, NA, legtemp[10]),
-#          border = FALSE,
-#          bty = "n",
-#          ncol = 1,
-#          y.intersp = 0.5,
-#          title = "Interpolation",
-#          cex = 0.75)
-# }
-# SurfaceFun("neuro")
+# 
+# 
+# # Read in boundary
+# #boundary <- readOGR("E:/fdoh/private/surv/Alachua_Boundary", "Alachua_Boundary")
+# 
+# boundary <- zip.map # have to do this due to lack of projection system
+# boundary <- unionSpatialPolygons(boundary, rep(1, length(boundary@polygons)))
+# 
+# # # Read in population
+# # pop <- readOGR("E:/fdoh/private/surv/Alachua_CT_POP", "Alachua_CT_POP")
+# 
+# # Define color vector
+# my_colors <- colorRampPalette(c("blue", "red"))(100)
+# # 
+# # SurfaceFun <- function(disease = "ili",
+# #                        boundary_shape = boundary){
+# #   
+# #   
+# #   
+# #   # getting coordinates of alachua boundary
+# #   boundary_points <- boundary@polygons[[1]]@Polygons
+# #   boundary_points <- boundary_points[[1]]@coords
+# #   
+# #   # Get trap locations and data values
+# #   a <- data.frame("x" = zip.map$x,
+# #                   "y" = zip.map$y,
+# #                   "z" = zip[,paste0(disease, "per")])
+# #   # Make into a geodata object
+# #   b <- as.geodata(a)
+# #   
+# #   # Predict multiple points in Alachua County's boundary
+# #   x <- seq(min(boundary_points[,1]), max(boundary_points[,1]), length = 100)
+# #   y <- seq(min(boundary_points[,2]), max(boundary_points[,2]), length = 100)
+# #   
+# #   # Make a grid of those points
+# #   pred.grid <- expand.grid(x,y)
+# #   
+# #   
+# #   # kriging calculations
+# #   kc <- krige.conv(geodata = b, coords = b$coords, data = b$data,
+# #                    locations = pred.grid,
+# #                    borders = boundary_points,
+# #                    #borders = boundary@polygons,
+# #                    # borders = ALACHUA BORDERS!,
+# #                    krige = krige.control(type.krige = "ok",
+# #                                          cov.pars = c(5000,10000000))) #10, 3.33 # what is this?
+# #   
+# #   
+# #   
+# #   # Plot!
+# #   # displaying predicted values
+# #   image(kc, loc = pred.grid, 
+# #         col = my_colors,
+# #         xlab=NA, ylab=NA,
+# #         xaxt = "n",
+# #         yaxt = "n",
+# #         xpd = NA,
+# #         bty = "n")
+# #   
+# #   # Define percentiles for legend
+# #   legtemp <-  round(quantile(kc$predict, probs = seq(0,1,, length = 10)))
+# #   
+# #   legend(x="topright",
+# #          fill = my_colors[c(1,11,22,33,44,55,66,77,88,100)],
+# #          legend = c(legtemp[1], NA, NA, legtemp[4], NA, NA, legtemp[7], NA, NA, legtemp[10]),
+# #          border = FALSE,
+# #          bty = "n",
+# #          ncol = 1,
+# #          y.intersp = 0.5,
+# #          title = "Interpolation",
+# #          cex = 0.75)
+# # }
+# # SurfaceFun("neuro")
 
 
 
