@@ -136,6 +136,8 @@ copy_zap('zap.R')
 copy_zap('zap.Rnw')
 copy_zap('doh.png')
 copy_zap('zap_compile.R')
+copy_zap('sweave_that_shit.R')
+
 
 # Run the zap file (daily surveillance)
 os.chdir(private_today)
@@ -144,8 +146,8 @@ os.system('Rscript zap.R')
 #robjects.r['source']("zap.R")
 
 # Compile the pdf
-os.chdir(public)
-os.system('Rscript code/sweave_that_shit.R')
+os.chdir(private_today)
+os.system('Rscript sweave_that_shit.R')
 
 #os.chdir(private_today)
 #os.system('ls -l -h')
