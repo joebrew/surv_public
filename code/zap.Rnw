@@ -353,6 +353,10 @@ There were \Sexpr{nrow(flag)} flagged terms yesterday.
 \begin{figure}[H]
 \begin{center}
 <<fig=TRUE>>=
+if(nrow(flag)>9){
+  flag <- flag[1:9,]
+  flagSearch <- flagSearch[,1:10]
+}
 flag$Yesterday <- as.numeric(as.character(flag$Yesterday))
 par(mar=c(2,2,2,1))
 par(oma=c(0,0,0,0))
@@ -413,6 +417,7 @@ There have been \Sexpr{nrow(ebola)} detection(s) this week:
 
 \begin{table}[H]
 <<results=tex, keep.source=TRUE>>=
+ebola$Date <- as.character(ebola$Date)
 print(xtable(ebola[,c("Date", "Age", "Zipcode", "MedRecNo",
                           "Sex", "CCDD", "Region", "Hospital")]), include.rownames=FALSE, size="\\tiny")
 @
@@ -426,6 +431,7 @@ There have been \Sexpr{nrow(wnv)} detection(s) this week:
 
 \begin{table}[H]
 <<results=tex, keep.source=TRUE>>=
+wnv$Date <- as.character(wnv$Date)
 print(xtable(wnv[,c("Date", "Age", "Zipcode", "MedRecNo",
                           "Sex", "CCDD", "Region", "Hospital")]), include.rownames=FALSE, size="\\tiny")
 @

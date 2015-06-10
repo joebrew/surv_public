@@ -144,8 +144,11 @@ os.system('Rscript zap.R')
 #robjects.r['source']("zap.R")
 
 # Compile the pdf
-os.chdir(private_today)
-os.system('ls -l -h')
-os.system('R CMD Sweave --pdf zap.Rnw')
+os.chdir(public)
+os.system('Rscript code/sweave_that_shit.R')
+
+#os.chdir(private_today)
+#os.system('ls -l -h')
+#os.system('R CMD Sweave --pdf zap.Rnw')
 
 os.system('gnome-open zap.pdf')
