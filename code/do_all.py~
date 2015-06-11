@@ -136,7 +136,7 @@ copy_zap('zap.R')
 copy_zap('zap.Rnw')
 copy_zap('doh.png')
 copy_zap('zap_compile.R')
-copy_zap('sweave_it.R')
+copy_zap('sweave_that_shit.R')
 
 
 # Run the zap file (daily surveillance)
