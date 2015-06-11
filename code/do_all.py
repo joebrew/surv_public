@@ -147,7 +147,7 @@ os.system('Rscript zap.R')
 
 # Compile the pdf
 os.chdir(private_today)
-os.system('Rscript sweave_that_shit.R')
+os.system('Rscript sweave_it.R')
 
 #os.chdir(private_today)
 #os.system('ls -l -h')
