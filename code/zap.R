@@ -27,7 +27,7 @@ if ( Sys.info()["sysname"] == "Linux" ){
 }
 
 setwd(private_surv) 
-
+cat(paste0('Done with working directory.\n'))
 
 ###################
 #SET Q (HOW FAR TO GO BACK IN TS PLOTS)
@@ -93,7 +93,7 @@ rash <- read_data('rash.txt')
 resp <- read_data('resp.txt')
 roi <- read_data('roi.txt', colClasses = 'character')
 roi2 <- read_data('roi2.txt', colClasses = 'character')
-cat('\n\n\ndata read in\n\n')
+cat('\n\n\ndata read in done\n\n')
 
 ###################
 #ADD A CCDDCATEGORY COLUMN

@@ -6,7 +6,7 @@ import html2text
 import pandas as pd
 import subprocess
 import os
-#os.environ['R_HOME']='/usr/lib/R'
+os.environ['R_HOME']='/usr/lib/R'
 import rpy2
 import rpy2.robjects as robjects
 import re
@@ -56,7 +56,8 @@ os.chdir(private)
 
 # Run the r script to get the dates and URLs for today's data download
 os.chdir(public)
-os.system('Rscript code/00_get_links.R')
+robjects.r('source("code/00_get_links.R")')
+# os.system('Rscript code/00_get_links.R')
 #robjects.r['source']("code/00_get_links.R")
 
 # Read in which links I need for today
@@ -112,10 +113,10 @@ br.submit()
 reported_yet = br.open('https://www.essencefl.com/florida_5_1_14/servlet/HomePageServlet')
 reported_text = reported_yet.read()
 cleaned_yesterday = re.sub(' 0', '  ', yesterday)
-if r'Alachua              reporting (2\/2) hospitals for ' + cleaned_yesterday in reported_text:
-    print 'Good to go - both hospitals are reporting'
+if r'Alachua              reporting (4\/4) hospitals for ' + cleaned_yesterday in reported_text:
+    print 'Good to go - all 4 facilities are reporting'
 else:
-    print 'Stop here - not all hospitals have reported yet for today'
+    print 'Stop here - not all facilities have reported yet for today'
 
 # Loop through each link, download the data for that link, and write that data to a file
 os.chdir(private_today)
@@ -141,13 +142,17 @@ copy_zap('sweave_it.R')
 
 # Run the zap file (daily surveillance)
 os.chdir(private_today)
-os.system('Rscript zap.R')
+# os.system('Rscript zap.R')
+robjects.r('source("zap.R")') #check directories
+
 #os.system('R CMD BATCH --no-save --no-restore zap.R')
 #robjects.r['source']("zap.R")
 
 # Compile the pdf
 os.chdir(private_today)
-os.system('Rscript sweave_it.R')
+# os.system('Rscript sweave_it.R')
+robjects.r('source("sweave_it.R")') #check directories
+
 
 #os.chdir(private_today)
 #os.system('ls -l -h')
